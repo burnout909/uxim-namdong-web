@@ -12,7 +12,7 @@ export const ROUTE = {
   },
 
   projects: {
-    publicService: "/projects/public-service",
+    publicService: "/projects/public",
     capacity: "/projects/capacity",
     community: "/projects/community",
     employment: "/projects/employment",
