@@ -1,4 +1,6 @@
+// app/(content)/home/page.tsx
 'use client';
+
 import HeroImage from "@/assets/images/main2.png"
 import {
   FaPhoneAlt,
@@ -40,7 +42,7 @@ const PARTICIPATION_STEPS = [
   },
   {
     label: "사후관리",
-    icon: <FaUserCheck className="text-gray-600 text-3xl" />,
+    icon: <FaUserCheck className="text-gray-700 text-3xl" />,
   },
 ];
 
@@ -74,18 +76,18 @@ export default function Home() {
         {/* 공지사항 */}
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-semibold">
+            <h2 className="text-2xl font-semibold !text-gray-900">
               공지사항{" "}
-              <span className="text-gray-500 text-lg ml-2">Notice</span>
+              <span className="!text-gray-600 text-lg ml-2">Notice</span>
             </h2>
             <button
               onClick={() => router.push(ROUTE.notice.announcement)}
-              className="text-xl hover:text-blue-500"
+              className="!text-gray-800 text-xl hover:!text-blue-500 transition-colors"
             >
               ＋
             </button>
           </div>
-          <ul className="space-y-2 text-sm text-gray-700">
+          <ul className="space-y-2 text-sm !text-gray-500">
             {Array.from({ length: 5 }).map((_, i) => (
               <NoticeItem
                 key={i}
@@ -99,13 +101,18 @@ export default function Home() {
         {/* 일자리 소식 */}
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-semibold">
+            <h2 className="text-2xl font-semibold !text-gray-900">
               일자리 소식{" "}
-              <span className="text-gray-500 text-lg ml-2">Job Info</span>
+              <span className="!text-gray-600 text-lg ml-2">Job Info</span>
             </h2>
-            <button className="text-xl hover:text-blue-500">＋</button>
+            <button 
+              onClick={() => router.push(ROUTE.notice.jobInfo)}
+              className="!text-gray-800 text-xl hover:!text-blue-500 transition-colors"
+            >
+              ＋
+            </button>
           </div>
-          <ul className="space-y-2 text-sm text-gray-700">
+          <ul className="space-y-2 text-sm !text-gray-800">
             {Array.from({ length: 5 }).map((_, i) => (
               <NoticeItem
                 key={i}
@@ -120,7 +127,7 @@ export default function Home() {
       {/* 일자리 참여방법 */}
       <section className="bg-gray-50 py-16">
         <div className="max-w-6xl mx-auto text-center">
-          <p className="text-2xl font-bold mb-10">일자리참여방법</p>
+          <p className="text-2xl font-bold mb-10 !text-gray-900">일자리참여방법</p>
 
           <div className="flex flex-wrap justify-center items-center mt-10 gap-10">
             {PARTICIPATION_STEPS.map(({ label, icon }, i) => (
@@ -130,13 +137,13 @@ export default function Home() {
                   <div className="w-20 h-20 rounded-md bg-white shadow-md border border-gray-200 flex items-center justify-center">
                     {icon}
                   </div>
-                  <p className="text-s text-gray-700 mt-2">{label}</p>
+                  <p className="text-sm !text-gray-800 mt-2 font-medium">{label}</p>
                 </div>
 
                 {/* 화살표 */}
                 {i < PARTICIPATION_STEPS.length - 1 && (
                   <div className="h-20 flex items-center">
-                    <FaArrowRight className="text-gray-400 text-2xl relative -top-[10px]" />
+                    <FaArrowRight className="text-gray-500 text-2xl relative -top-[10px]" />
                   </div>
                 )}
               </div>
