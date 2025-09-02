@@ -8,11 +8,11 @@ export default function Greeting() {
             <Title text="인사말" />
 
             <div className="text-center mt-8 mb-12">
-                <h2 className="!text-[24px] font-bold mt-4 mb-12">안녕하십니까?</h2>
-                <p className="!text-[22px] mt-2 text-lg">
+                <h2 className="!text-[24px] !text-gray-800 font-bold mt-4 mb-12">안녕하십니까?</h2>
+                <p className="!text-[22px] !text-gray-800 mt-2 text-lg">
                     남동시니어클럽 홈페이지를 찾아주신 여러분, 진심으로 반갑습니다.
                 </p>
-                <p className="!text-[22px] mt-2 text-lg">
+                <p className="!text-[22px] !text-gray-700 mt-2 text-lg">
                     당신의 인생 2막, 우리가 함께합니다.
                 </p>
             </div>
@@ -23,7 +23,7 @@ export default function Greeting() {
                     <p className="text-center font-bold mb-4">
                         ‘누군가에게 필요한 존재로 살아간다는 것’
                     </p>
-                    <p className="mb-4">
+                    <p className="text-center mb-4">
                         그것은 나이와 상관없이 인생에 활력을 불어넣는 특별한 경험입니다.
                     </p>
 
