@@ -1,10 +1,4 @@
-<<<<<<< Updated upstream
-// app/(content)/home/page.tsx
-'use client';
-
-=======
 // app/home/page.tsx
->>>>>>> Stashed changes
 import HeroImage from "@/assets/images/main2.png"
 import {
   FaPhoneAlt,
@@ -136,28 +130,13 @@ export default async function Home() {
               공지사항{" "}
               <span className="!text-gray-600 text-lg ml-2">Notice</span>
             </h2>
-<<<<<<< Updated upstream
-            <button
-              onClick={() => router.push(ROUTE.notice.announcement)}
-=======
             <Link
               href={ROUTE.notice.announcement}
->>>>>>> Stashed changes
               className="!text-gray-800 text-xl hover:!text-blue-500 transition-colors"
             >
               ＋
             </Link>
           </div>
-<<<<<<< Updated upstream
-          <ul className="space-y-2 text-sm !text-gray-500">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <NoticeItem
-                key={i}
-                title={`2024년도 서울남동시니어클럽 제${i + 1}차 운영위원회...`}
-                date={"2025.XX.XX"}
-              />
-            ))}
-=======
           <ul className="space-y-2 text-sm !text-gray-800">
             {notices.length === 0 ? (
               Array.from({ length: 5 }).map((_, i) => (
@@ -185,7 +164,6 @@ export default async function Home() {
                 </Link>
               ))
             )}
->>>>>>> Stashed changes
           </ul>
         </div>
 
@@ -196,23 +174,6 @@ export default async function Home() {
               일자리 소식{" "}
               <span className="!text-gray-600 text-lg ml-2">Job Info</span>
             </h2>
-<<<<<<< Updated upstream
-            <button 
-              onClick={() => router.push(ROUTE.notice.jobInfo)}
-              className="!text-gray-800 text-xl hover:!text-blue-500 transition-colors"
-            >
-              ＋
-            </button>
-          </div>
-          <ul className="space-y-2 text-sm !text-gray-800">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <NoticeItem
-                key={i}
-                title={`2024년도 서울남동시니어클럽 제${i + 1}차 운영위원회...`}
-                date={"2025.XX.XX"}
-              />
-            ))}
-=======
             <Link 
               href={ROUTE.notice.jobInfo}
               className="!text-gray-800 text-xl hover:!text-blue-500 transition-colors"
@@ -247,18 +208,13 @@ export default async function Home() {
                 </Link>
               ))
             )}
->>>>>>> Stashed changes
           </ul>
         </div>
       </section>
 
       {/* 일자리 참여방법 */}
       <section className="bg-gray-50 py-16">
-<<<<<<< Updated upstream
-        <div className="max-w-6xl mx-auto text-center">
-=======
         <div className="max-w-6xl mx-auto text-center px-4">
->>>>>>> Stashed changes
           <p className="text-2xl font-bold mb-10 !text-gray-900">일자리참여방법</p>
 
           <div className="flex flex-wrap justify-center items-center mt-10 gap-10">
