@@ -1,6 +1,10 @@
+<<<<<<< Updated upstream
 // app/(content)/home/page.tsx
 'use client';
 
+=======
+// app/home/page.tsx
+>>>>>>> Stashed changes
 import HeroImage from "@/assets/images/main2.png"
 import {
   FaPhoneAlt,
@@ -10,11 +14,12 @@ import {
   FaUserCheck,
   FaArrowRight,
 } from "react-icons/fa";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { ROUTE } from "@/constants/route";
 import QuickLinkCard from "@/components/home/QuickLinkCard";
 import NoticeItem from "@/components/home/NoticeItem";
-import Image from "next/image"
+import Image from "next/image";
+import { createClient } from "@/utils/supabase/server";
 
 const QUICK_LINKS = [
   { label: "기관소개", to: ROUTE.about.greeting },
@@ -46,8 +51,59 @@ const PARTICIPATION_STEPS = [
   },
 ];
 
-export default function Home() {
-  const router = useRouter();
+// Supabase에서 최신 공지사항 조회
+async function getLatestNotices() {
+  const supabase = await createClient();
+  
+  try {
+    const { data: notices, error } = await supabase
+      .from('POST')
+      .select('id, title, created_at')
+      .eq('type', 'NOTICE')
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    if (error) {
+      console.error('Error fetching notices:', error);
+      return [];
+    }
+
+    return notices || [];
+  } catch (error) {
+    console.error('Error fetching notices:', error);
+    return [];
+  }
+}
+
+// 일자리 소식 조회 (type이 다른 경우)
+async function getLatestJobs() {
+  const supabase = await createClient();
+  
+  try {
+    const { data: jobs, error } = await supabase
+      .from('POST')
+      .select('id, title, created_at')
+      .eq('type', 'JOB') // 일자리 소식용 타입
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    if (error) {
+      console.error('Error fetching jobs:', error);
+      return [];
+    }
+
+    return jobs || [];
+  } catch (error) {
+    console.error('Error fetching jobs:', error);
+    return [];
+  }
+}
+
+export default async function Home() {
+  const [notices, jobs] = await Promise.all([
+    getLatestNotices(),
+    getLatestJobs()
+  ]);
 
   return (
     <div className="w-full">
@@ -72,7 +128,7 @@ export default function Home() {
       </section>
 
       {/* 공지사항 + 일자리 소식 */}
-      <section className="w-full max-w-6xl mx-auto py-12 grid md:grid-cols-2 gap-12">
+      <section className="w-full max-w-6xl mx-auto py-12 grid md:grid-cols-2 gap-12 px-4">
         {/* 공지사항 */}
         <div>
           <div className="flex items-center justify-between mb-4">
@@ -80,13 +136,19 @@ export default function Home() {
               공지사항{" "}
               <span className="!text-gray-600 text-lg ml-2">Notice</span>
             </h2>
+<<<<<<< Updated upstream
             <button
               onClick={() => router.push(ROUTE.notice.announcement)}
+=======
+            <Link
+              href={ROUTE.notice.announcement}
+>>>>>>> Stashed changes
               className="!text-gray-800 text-xl hover:!text-blue-500 transition-colors"
             >
               ＋
-            </button>
+            </Link>
           </div>
+<<<<<<< Updated upstream
           <ul className="space-y-2 text-sm !text-gray-500">
             {Array.from({ length: 5 }).map((_, i) => (
               <NoticeItem
@@ -95,6 +157,35 @@ export default function Home() {
                 date={"2025.XX.XX"}
               />
             ))}
+=======
+          <ul className="space-y-2 text-sm !text-gray-800">
+            {notices.length === 0 ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <NoticeItem
+                  key={i}
+                  title={`2024년도 서울남동시니어클럽 제${i + 1}차 운영위원회...`}
+                  date={"2025.XX.XX"}
+                />
+              ))
+            ) : (
+              notices.map((notice) => (
+                <Link 
+                  key={notice.id} 
+                  href={`/notice/announcement/${notice.id}`}
+                  className="block hover:bg-gray-50 transition-colors rounded"
+                >
+                  <NoticeItem
+                    title={notice.title}
+                    date={new Date(notice.created_at).toLocaleDateString('ko-KR', {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit'
+                    }).replace(/\./g, '.').replace(/\s/g, '')}
+                  />
+                </Link>
+              ))
+            )}
+>>>>>>> Stashed changes
           </ul>
         </div>
 
@@ -105,6 +196,7 @@ export default function Home() {
               일자리 소식{" "}
               <span className="!text-gray-600 text-lg ml-2">Job Info</span>
             </h2>
+<<<<<<< Updated upstream
             <button 
               onClick={() => router.push(ROUTE.notice.jobInfo)}
               className="!text-gray-800 text-xl hover:!text-blue-500 transition-colors"
@@ -120,13 +212,53 @@ export default function Home() {
                 date={"2025.XX.XX"}
               />
             ))}
+=======
+            <Link 
+              href={ROUTE.notice.jobInfo}
+              className="!text-gray-800 text-xl hover:!text-blue-500 transition-colors"
+            >
+              ＋
+            </Link>
+          </div>
+          <ul className="space-y-2 text-sm !text-gray-800">
+            {jobs.length === 0 ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <NoticeItem
+                  key={i}
+                  title={`2024년도 서울남동시니어클럽 제${i + 1}차 운영위원회...`}
+                  date={"2025.XX.XX"}
+                />
+              ))
+            ) : (
+              jobs.map((job) => (
+                <Link 
+                  key={job.id} 
+                  href={`/notice/job-info/${job.id}`} 
+                  className="block hover:bg-gray-50 transition-colors rounded"
+                >
+                  <NoticeItem
+                    title={job.title}
+                    date={new Date(job.created_at).toLocaleDateString('ko-KR', {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit'
+                    }).replace(/\./g, '.').replace(/\s/g, '')}
+                  />
+                </Link>
+              ))
+            )}
+>>>>>>> Stashed changes
           </ul>
         </div>
       </section>
 
       {/* 일자리 참여방법 */}
       <section className="bg-gray-50 py-16">
+<<<<<<< Updated upstream
         <div className="max-w-6xl mx-auto text-center">
+=======
+        <div className="max-w-6xl mx-auto text-center px-4">
+>>>>>>> Stashed changes
           <p className="text-2xl font-bold mb-10 !text-gray-900">일자리참여방법</p>
 
           <div className="flex flex-wrap justify-center items-center mt-10 gap-10">
