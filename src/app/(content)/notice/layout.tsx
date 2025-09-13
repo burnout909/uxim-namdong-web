@@ -6,7 +6,6 @@ const aboutItems = [
     { label: "일자리소식", path: ROUTE.notice.jobInfo },
     { label: "생산품", path: ROUTE.notice.products },
     { label: "자유게시판", path: ROUTE.notice.free },
-    { label: "직원게시판", path: ROUTE.notice.staff },
 ];
 
 export default function AboutLayout({ children }: Readonly<{ children: React.ReactNode }>) {
