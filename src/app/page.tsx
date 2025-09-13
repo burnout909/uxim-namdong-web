@@ -1,4 +1,4 @@
-// app/home/page.tsx
+
 import HeroImage from "@/assets/images/main2.png"
 import {
   FaPhoneAlt,
