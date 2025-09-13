@@ -109,9 +109,8 @@ export default async function AnnouncementDetail({
           dangerouslySetInnerHTML={{ __html: post.contents ?? "" }}
         />
 
-        {/* 하단 메타 (조회수/작성일) */}
+        {/* 하단 메타 (작성일) */}
         <div className="flex items-center justify-end gap-6 border-t px-6 py-4 text-sm text-gray-600">
-          <span>조회수: {post.views ?? 0}</span>
           <span>작성일: {formatMetaDate(post.created_at)}</span>
         </div>
       </section>
