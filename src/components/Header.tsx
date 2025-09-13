@@ -24,23 +24,18 @@ export default function Header() {
   const router = useRouter();
   return (
     <header className="w-full bg-white">
-      <div className="flex h-[88px] px-20 py-5 items-center">
-        <button onClick={() => router.push(ROUTE.home)}>
-          <Image src={LogoImage} width={224} height={48} alt="logo" />
-        </button>
-      </div>
+      <button className="ml-20 cursor-pointer py-5" onClick={() => router.push(ROUTE.home)}>
+        <Image src={LogoImage} width={224} height={48} alt="logo" />
+      </button>
       <nav className="h-[64px] w-full border-t border-b border-[#D8D8D8] flex px-[50px]">
         {HEADERCOMPONENT.map((label) => (
-          <div
+          <button
             key={label}
-            className="border-y border-[#D8D8D8] py-6 px-4 text-center text-lg text-slate-600 hover:bg-slate-100 focus:bg-slate-100 active:bg-slate-100 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
-          >
-            <button onClick={() => router.push(HEADER_URLS[label])}>
-              {label}
-            </button>
-          </div>
+            className="cursor-pointer py-6 px-4 text-center text-lg text-slate-600 hover:bg-slate-100 focus:bg-slate-100 active:bg-slate-100 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none" onClick={() => router.push(HEADER_URLS[label])}>
+            {label}
+          </button>
         ))}
       </nav>
-    </header>
+    </header >
   );
 }
