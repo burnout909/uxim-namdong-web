@@ -34,7 +34,7 @@ export default function EditorPage() {
                 [{ header: [1, 2, false] }],
                 ['bold', 'italic', 'underline'],
                 [{ list: 'ordered' }, { list: 'bullet' }],
-                ['link', 'image'],
+                ['link', 'image', 'video'],
             ],
         }),
         []
@@ -50,6 +50,7 @@ export default function EditorPage() {
             'list',
             'link',
             'image',
+            'video'
         ],
         []
     );
