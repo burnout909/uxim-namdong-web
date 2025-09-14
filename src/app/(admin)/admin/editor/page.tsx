@@ -1,9 +1,25 @@
 'use client'
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import 'react-quill-new/dist/quill.snow.css';
 import dynamic from "next/dynamic";
+import { createBrowserClient } from '@supabase/ssr';
 
+// 브라우저용 Supabase 클라이언트
+const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
+);
+
+// 카테고리 타입 매핑
+const CategoryTypeEnumMap = {
+    'NOTICE': '공지사항',
+    'JOB': '일자리',
+    'PRODUCT': '생산품',
+    'FREE': '자유게시판',
+    'PHOTO': '사진게시판',
+    'VIDEO': '동영상게시판'
+};
 
 // SSR 비활성화해서 클라이언트에서만 로드
 const ReactQuill = dynamic(() => import('react-quill-new'), {
@@ -14,7 +30,20 @@ const ReactQuill = dynamic(() => import('react-quill-new'), {
 export default function EditorPage() {
     const [title, setTitle] = useState("");
     const [contents, setContents] = useState("");
+    const [userId, setUserId] = useState<string | null>(null);
+    const [type, setType] = useState('NOTICE');
     const router = useRouter();
+
+    // 사용자 정보 가져오기
+    useEffect(() => {
+        const getUserInfo = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                setUserId(user.id);
+            }
+        };
+        getUserInfo();
+    }, []);
 
     // 빈 에디터 판정(태그/엔티티 제거)
     const isEmpty = useMemo(() => {
@@ -25,7 +54,6 @@ export default function EditorPage() {
             .trim();
         return !title.trim() || plain.length === 0;
     }, [title, contents]);
-
 
     /**toolbar 구성 */
     const modules = useMemo(
@@ -62,9 +90,26 @@ export default function EditorPage() {
         }
 
         try {
-            alert("공지사항이 등록되었습니다.");
-            //supabase api 추가 필요
-            //route handler 추가해서 실시
+            const { data, error } = await supabase
+                .from('POST')
+                .insert([
+                    {
+                        title: title,
+                        contents: contents,
+                        user_id: userId,
+                        type: type
+                    }
+                ])
+                .select();
+
+            if (error) {
+                console.error("등록 실패:", error);
+                alert("게시글 등록에 실패했습니다.");
+                return;
+            }
+
+            alert("게시글이 등록되었습니다.");
+            router.push('/');
         } catch (err) {
             console.error("공지사항 등록 실패:", err);
             alert("공지사항 등록에 실패했습니다.");
@@ -73,7 +118,20 @@ export default function EditorPage() {
 
     return (
         <div className="px-24 py-12 min-h-screen">
-            <p className="text-2xl font-bold mb-4">공지사항 작성</p>
+            <p className="text-2xl font-bold mb-4">게시글 작성</p>
+
+            {/* 카테고리 선택 */}
+            <select
+                value={type}
+                onChange={(e) => setType(e.target.value)}
+                className="w-full border border-gray-300 p-2 mb-4 rounded"
+            >
+                {Object.entries(CategoryTypeEnumMap).map(([key, value]) => (
+                    <option key={key} value={key}>
+                        {value}
+                    </option>
+                ))}
+            </select>
 
             <input
                 type="text"
