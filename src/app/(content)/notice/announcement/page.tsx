@@ -1,7 +1,7 @@
 // app/(content)/notice/announcement/page.tsx
+import { createClient } from '@/lib/supabase';
 import Link from 'next/link';
 import { FaFileAlt } from 'react-icons/fa';
-import { createClient } from '@/utils/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
