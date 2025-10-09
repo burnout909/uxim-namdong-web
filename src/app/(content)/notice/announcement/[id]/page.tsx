@@ -1,7 +1,7 @@
 // app/(content)/notice/announcement/[id]/page.tsx
+import { createClient } from "@/lib/supabase";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createClient } from "@/utils/supabase/server";
 import { FaDownload } from "react-icons/fa";
 
 type Post = {

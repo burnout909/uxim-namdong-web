@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { createClient } from '@/utils/supabase/server';
+import { createClient } from '@/lib/supabase';
 import photoPlaceholder from '@/assets/images/resources/photoPlaceholder.png'
 
 export const dynamic = 'force-dynamic';
