@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createClient } from "@/utils/supabase/server";
+import { createClient } from '@/lib/supabase';
 import { FaDownload } from "react-icons/fa";
 
 type Post = {
@@ -117,22 +117,20 @@ export default async function FreeDetail({
         <Link
           href={prev ? `/notice/free/${prev.id}` : "#"}
           aria-disabled={!prev}
-          className={`inline-flex items-center gap-2 rounded border px-4 py-2 text-sm ${
-            prev
+          className={`inline-flex items-center gap-2 rounded border px-4 py-2 text-sm ${prev
               ? "text-gray-700 hover:bg-gray-100"
               : "cursor-not-allowed text-gray-400"
-          }`}
+            }`}
         >
           ◀ 이전
         </Link>
         <Link
           href={next ? `/notice/free/${next.id}` : "#"}
           aria-disabled={!next}
-          className={`inline-flex items-center gap-2 rounded border px-4 py-2 text-sm ${
-            next
+          className={`inline-flex items-center gap-2 rounded border px-4 py-2 text-sm ${next
               ? "text-gray-700 hover:bg-gray-100"
               : "cursor-not-allowed text-gray-400"
-          }`}
+            }`}
         >
           다음 ▶
         </Link>

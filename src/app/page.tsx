@@ -13,7 +13,7 @@ import { ROUTE } from "@/constants/route";
 import QuickLinkCard from "@/components/home/QuickLinkCard";
 import NoticeItem from "@/components/home/NoticeItem";
 import Image from "next/image";
-import { createClient } from "@/utils/supabase/server";
+import { createClient } from "@/lib/supabase";
 
 const QUICK_LINKS = [
   { label: "기관소개", to: ROUTE.about.greeting },
