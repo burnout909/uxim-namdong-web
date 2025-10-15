@@ -75,7 +75,7 @@ export default function EditorPage() {
                 [{ header: [1, 2, false] }],
                 ['bold', 'italic', 'underline'],
                 [{ list: 'ordered' }, { list: 'bullet' }],
-                ['link', 'image', 'video'], // 에디터의 비디오 embed는 유지 (파일 업로드와는 별개)
+                // ['link', 'image', 'video'], // 에디터의 비디오 embed는 유지 (파일 업로드와는 별개) 일단은 이미지 업로드 비오픈
             ],
         }),
         []
