@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { v4 as uuidv4 } from 'uuid';
-import { generateUploadUrl } from '@/app/service/s3';
+import { generateUploadUrl, generateDownloadUrl } from '@/app/service/s3';
 import ReactCrop, { type PercentCrop, type PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 
@@ -15,10 +15,22 @@ const supabase = createBrowserClient(
 
 // 배너 타입 정의
 interface Banner {
-  id: number;
-  image_url: string;
+  id: string;
+  file_key: string;
+  bucket: string;
+  size_bytes: number;
+  mime_type: string;
   order_index: number;
+  user_id: string;
+  created_at: string;
+  updated_at: string;
+  image_url?: string; // 프론트엔드에서 동적 생성
 }
+
+// 배너 권장 크기
+const BANNER_WIDTH = 1024;
+const BANNER_HEIGHT = 320;
+const BANNER_RATIO = BANNER_WIDTH / BANNER_HEIGHT; // 3.2:1
 
 export default function BannerPage() {
   const [userId, setUserId] = useState<string | null>(null);
@@ -30,7 +42,7 @@ export default function BannerPage() {
     x: 10,
     y: 10,
     width: 80,
-    height: 45,
+    height: 25,
   });
   const [completedCrop, setCompletedCrop] = useState<PixelCrop | null>(null);
 
@@ -50,15 +62,45 @@ export default function BannerPage() {
     getUser();
   }, []);
 
-  // 배너 목록
+  // 배너 목록 불러오기 + Presigned URL 생성
   useEffect(() => {
     const fetchBanners = async () => {
       const { data, error } = await supabase
         .from('BANNER')
         .select('*')
         .order('order_index', { ascending: true });
-      if (!error && data) setBannerList(data);
+      
+      if (error) {
+        console.error('배너 로드 에러:', error);
+        return;
+      }
+
+      if (data) {
+        console.log('🎨 배너 데이터:', data);
+        
+        // 각 배너에 대해 Presigned URL 생성
+        const bannersWithUrls = await Promise.all(
+          data.map(async (banner) => {
+            try {
+              const downloadUrl = await generateDownloadUrl(banner.bucket, banner.file_key);
+              return {
+                ...banner,
+                image_url: downloadUrl
+              };
+            } catch (err) {
+              console.error('Presigned URL 생성 실패:', banner.file_key, err);
+              return {
+                ...banner,
+                image_url: ''
+              };
+            }
+          })
+        );
+        
+        setBannerList(bannersWithUrls);
+      }
     };
+    
     fetchBanners();
   }, []);
 
@@ -77,7 +119,7 @@ export default function BannerPage() {
     setCompletedCrop(null);
   };
 
-  /** 크롭 완료 시 캔버스에 그려두기 */
+  /** 크롭 완료 시 캔버스에 그려두기 (1024x320 고정) */
   useEffect(() => {
     if (!completedCrop || !imgRef.current || !canvasRef.current) return;
 
@@ -89,9 +131,11 @@ export default function BannerPage() {
     const scaleX = image.naturalWidth / image.width;
     const scaleY = image.naturalHeight / image.height;
 
-    canvas.width = completedCrop.width;
-    canvas.height = completedCrop.height;
+    // 고정 크기로 캔버스 설정
+    canvas.width = BANNER_WIDTH;
+    canvas.height = BANNER_HEIGHT;
 
+    // 고해상도로 리사이징
     ctx.drawImage(
       image,
       completedCrop.x * scaleX,
@@ -100,8 +144,8 @@ export default function BannerPage() {
       completedCrop.height * scaleY,
       0,
       0,
-      completedCrop.width,
-      completedCrop.height
+      BANNER_WIDTH,
+      BANNER_HEIGHT
     );
   }, [completedCrop]);
 
@@ -117,7 +161,7 @@ export default function BannerPage() {
 
   /** 업로드 */
   const handleUpload = useCallback(async () => {
-    if (!completedCrop || !userId) {
+    if (!completedCrop || !userId || !selectedFile) {
       alert('이미지를 선택하고 영역을 조정해주세요.');
       return;
     }
@@ -127,36 +171,60 @@ export default function BannerPage() {
 
       const blob = await getCroppedBlob();
       const bucket = process.env.NEXT_PUBLIC_S3_BUCKET_NAME!;
-      const key = `banners/${uuidv4()}.jpg`;
-      const uploadUrl = await generateUploadUrl(bucket, key);
+      const fileExtension = selectedFile.name.split('.').pop() || 'jpg';
+      const fileKey = `banners/${uuidv4()}.${fileExtension}`;
+      
+      console.log('📤 업로드 시작:', { bucket, fileKey });
+      
+      // 1. Presigned URL 생성 (업로드용)
+      const uploadUrl = await generateUploadUrl(bucket, fileKey);
+      console.log('🔗 업로드 URL 생성:', uploadUrl);
 
+      // 2. S3에 업로드
       const response = await fetch(uploadUrl, {
         method: 'PUT',
-        headers: { 'Content-Type': 'image/jpeg' },
+        headers: { 'Content-Type': blob.type },
         body: blob,
       });
 
       if (!response.ok) {
+        console.error('S3 업로드 실패:', response.status, response.statusText);
         throw new Error('S3 업로드 실패');
       }
 
-      const uploadedUrl = `https://${bucket}.s3.amazonaws.com/${key}`;
+      console.log('✅ S3 업로드 완료');
 
+      // 3. DB에 파일 메타데이터 저장
       const { data, error } = await supabase
         .from('BANNER')
         .insert([
           {
-            image_url: uploadedUrl,
-            uploaded_by: userId,
+            file_key: fileKey,
+            bucket: bucket,
+            size_bytes: blob.size,
+            mime_type: blob.type,
             order_index: bannerList.length + 1,
+            user_id: userId,
           },
         ])
         .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('DB 저장 실패:', error);
+        throw error;
+      }
 
+      console.log('💾 DB 저장 완료:', data);
+
+      // 4. 새로 추가된 배너에 Presigned URL 생성
       if (data && data.length > 0) {
-        setBannerList((prev) => [...prev, data[0]]);
+        const newBanner = data[0];
+        const downloadUrl = await generateDownloadUrl(bucket, fileKey);
+        
+        setBannerList((prev) => [...prev, {
+          ...newBanner,
+          image_url: downloadUrl
+        }]);
       }
 
       alert('✅ 배너가 성공적으로 등록되었습니다!');
@@ -165,12 +233,12 @@ export default function BannerPage() {
       setCompletedCrop(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err) {
-      console.error(err);
+      console.error('업로드 오류:', err);
       alert('업로드 중 오류가 발생했습니다. 다시 시도해주세요.');
     } finally {
       setUploading(false);
     }
-  }, [completedCrop, userId, bannerList]);
+  }, [completedCrop, userId, selectedFile, bannerList]);
 
   /** 순서 변경 */
   const handleMove = async (from: number, to: number) => {
@@ -197,7 +265,7 @@ export default function BannerPage() {
   };
 
   /** 배너 삭제 */
-  const handleDelete = async (bannerId: number) => {
+  const handleDelete = async (bannerId: string) => {
     if (!confirm('이 배너를 삭제하시겠습니까?')) return;
 
     try {
@@ -228,6 +296,7 @@ export default function BannerPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">배너 관리</h1>
           <p className="text-gray-600">메인 페이지에 표시될 배너를 등록하고 관리하세요</p>
+          <p className="text-sm text-blue-600 mt-1">최종 크기: 3.2:1 비율</p>
         </div>
 
         {/* 업로드 섹션 */}
@@ -257,11 +326,11 @@ export default function BannerPage() {
                   </div>
                   <div>
                     <p className="text-lg font-medium text-gray-700 mb-1">이미지를 선택해주세요</p>
-                    <p className="text-sm text-gray-500">권장 비율: 16:9 | JPG, PNG 형식</p>
+                    <p className="text-sm text-gray-500">최종 크기: 3.2:1 비율 | JPG, PNG 형식</p>
                   </div>
-                  <button className="px-6 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                  <span className="px-6 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
                     파일 선택
-                  </button>
+                  </span>
                 </div>
               </label>
             </div>
@@ -271,7 +340,7 @@ export default function BannerPage() {
               <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
                 <div className="mb-3 flex items-center justify-between">
                   <p className="text-sm font-medium text-gray-700">
-                    🎯 배너 영역을 조정하세요 (16:9 비율)
+                    🎯 배너 영역을 조정하세요
                   </p>
                   <button
                     onClick={handleCancelSelect}
@@ -280,20 +349,22 @@ export default function BannerPage() {
                     다시 선택
                   </button>
                 </div>
-                <ReactCrop
-                  crop={crop}
-                  onChange={(pixelCrop: PixelCrop, percentCrop: PercentCrop) => setCrop(percentCrop)}
-                  onComplete={(pixelCrop: PixelCrop) => setCompletedCrop(pixelCrop)}
-                  aspect={16 / 9}
-                  keepSelection
-                >
-                  <img
-                    ref={imgRef}
-                    src={previewUrl}
-                    alt="preview"
-                    className="max-w-full rounded-lg"
-                  />
-                </ReactCrop>
+                <div className="flex justify-center">
+                  <ReactCrop
+                    crop={crop}
+                    onChange={(pixelCrop: PixelCrop, percentCrop: PercentCrop) => setCrop(percentCrop)}
+                    onComplete={(pixelCrop: PixelCrop) => setCompletedCrop(pixelCrop)}
+                    aspect={BANNER_RATIO}
+                    keepSelection
+                  >
+                    <img
+                      ref={imgRef}
+                      src={previewUrl}
+                      alt="preview"
+                      className="max-w-full rounded-lg"
+                    />
+                  </ReactCrop>
+                </div>
               </div>
 
               <canvas ref={canvasRef} className="hidden" />
@@ -313,7 +384,7 @@ export default function BannerPage() {
                       업로드 중...
                     </span>
                   ) : (
-                    '✅ 배너 등록하기'
+                    '배너 등록하기'
                   )}
                 </button>
                 <button
@@ -341,7 +412,7 @@ export default function BannerPage() {
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {bannerList.map((banner, i) => (
                 <div
                   key={banner.id}
@@ -352,12 +423,16 @@ export default function BannerPage() {
                     #{i + 1}
                   </div>
 
-                  {/* 이미지 */}
-                  <div className="aspect-video bg-gray-200">
+                  {/* 이미지 (1024x320 비율) */}
+                  <div className="aspect-[3.2/1] bg-gray-200">
                     <img
-                      src={banner.image_url}
+                      src={banner.image_url || ''}
                       alt={`banner-${i}`}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        console.error('이미지 로드 실패:', banner.image_url);
+                        e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23ddd" width="100" height="100"/%3E%3Ctext x="50" y="50" text-anchor="middle" fill="%23999"%3EError%3C/text%3E%3C/svg%3E';
+                      }}
                     />
                   </div>
 

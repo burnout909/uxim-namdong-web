@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { v4 as uuidv4 } from 'uuid';
-import { generateUploadUrl } from '@/app/service/s3';
+import { generateUploadUrl, generateDownloadUrl } from '@/app/service/s3';
 import ReactCrop, { type PercentCrop, type PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 
@@ -15,19 +15,29 @@ const supabase = createBrowserClient(
 
 // 팝업 타입 정의
 interface Popup {
-  id: number;
-  image_url: string;
+  id: string;
+  file_key: string;
+  bucket: string;
+  size_bytes: number;
+  mime_type: string;
   order_index: number;
   is_active: boolean;
+  user_id: string;
   created_at: string;
+  updated_at: string;
+  image_url?: string; // 프론트엔드에서 동적 생성
 }
+
+// 팝업 권장 크기 (비율 자유지만 최대 크기 제한)
+const MAX_POPUP_WIDTH = 800;
+const MAX_POPUP_HEIGHT = 1000;
 
 export default function PopupPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  // 크롭은 자유 비율 (aspect 없음)
+  // 크롭은 자유 비율
   const [crop, setCrop] = useState<PercentCrop>({
     unit: '%',
     x: 10,
@@ -53,15 +63,45 @@ export default function PopupPage() {
     getUser();
   }, []);
 
-  // 팝업 목록
+  // 팝업 목록 불러오기 + Presigned URL 생성
   useEffect(() => {
     const fetchPopups = async () => {
       const { data, error } = await supabase
         .from('POPUP')
         .select('*')
         .order('order_index', { ascending: true });
-      if (!error && data) setPopupList(data);
+      
+      if (error) {
+        console.error('팝업 로드 에러:', error);
+        return;
+      }
+
+      if (data) {
+        console.log('🪟 팝업 데이터:', data);
+        
+        // 각 팝업에 대해 Presigned URL 생성
+        const popupsWithUrls = await Promise.all(
+          data.map(async (popup) => {
+            try {
+              const downloadUrl = await generateDownloadUrl(popup.bucket, popup.file_key);
+              return {
+                ...popup,
+                image_url: downloadUrl
+              };
+            } catch (err) {
+              console.error('Presigned URL 생성 실패:', popup.file_key, err);
+              return {
+                ...popup,
+                image_url: ''
+              };
+            }
+          })
+        );
+        
+        setPopupList(popupsWithUrls);
+      }
     };
+    
     fetchPopups();
   }, []);
 
@@ -80,7 +120,7 @@ export default function PopupPage() {
     setCompletedCrop(null);
   };
 
-  /** 크롭 완료 시 캔버스에 그려두기 */
+  /** 크롭 완료 시 캔버스에 그려두기 (원본 비율 유지, 최대 크기 제한) */
   useEffect(() => {
     if (!completedCrop || !imgRef.current || !canvasRef.current) return;
 
@@ -92,8 +132,22 @@ export default function PopupPage() {
     const scaleX = image.naturalWidth / image.width;
     const scaleY = image.naturalHeight / image.height;
 
-    canvas.width = completedCrop.width;
-    canvas.height = completedCrop.height;
+    // 원본 크롭 크기
+    let outputWidth = completedCrop.width * scaleX;
+    let outputHeight = completedCrop.height * scaleY;
+
+    // 최대 크기 제한 (비율 유지하며 축소)
+    if (outputWidth > MAX_POPUP_WIDTH || outputHeight > MAX_POPUP_HEIGHT) {
+      const widthRatio = MAX_POPUP_WIDTH / outputWidth;
+      const heightRatio = MAX_POPUP_HEIGHT / outputHeight;
+      const ratio = Math.min(widthRatio, heightRatio);
+      
+      outputWidth = Math.floor(outputWidth * ratio);
+      outputHeight = Math.floor(outputHeight * ratio);
+    }
+
+    canvas.width = outputWidth;
+    canvas.height = outputHeight;
 
     ctx.drawImage(
       image,
@@ -103,8 +157,8 @@ export default function PopupPage() {
       completedCrop.height * scaleY,
       0,
       0,
-      completedCrop.width,
-      completedCrop.height
+      outputWidth,
+      outputHeight
     );
   }, [completedCrop]);
 
@@ -120,7 +174,7 @@ export default function PopupPage() {
 
   /** 업로드 */
   const handleUpload = useCallback(async () => {
-    if (!completedCrop || !userId) {
+    if (!completedCrop || !userId || !selectedFile) {
       alert('이미지를 선택하고 영역을 조정해주세요.');
       return;
     }
@@ -130,37 +184,61 @@ export default function PopupPage() {
 
       const blob = await getCroppedBlob();
       const bucket = process.env.NEXT_PUBLIC_S3_BUCKET_NAME!;
-      const key = `popups/${uuidv4()}.jpg`;
-      const uploadUrl = await generateUploadUrl(bucket, key);
+      const fileExtension = selectedFile.name.split('.').pop() || 'jpg';
+      const fileKey = `popups/${uuidv4()}.${fileExtension}`;
+      
+      console.log('📤 팝업 업로드 시작:', { bucket, fileKey });
+      
+      // 1. Presigned URL 생성 (업로드용)
+      const uploadUrl = await generateUploadUrl(bucket, fileKey);
+      console.log('🔗 업로드 URL 생성:', uploadUrl);
 
+      // 2. S3에 업로드
       const response = await fetch(uploadUrl, {
         method: 'PUT',
-        headers: { 'Content-Type': 'image/jpeg' },
+        headers: { 'Content-Type': blob.type },
         body: blob,
       });
 
       if (!response.ok) {
+        console.error('S3 업로드 실패:', response.status, response.statusText);
         throw new Error('S3 업로드 실패');
       }
 
-      const uploadedUrl = `https://${bucket}.s3.amazonaws.com/${key}`;
+      console.log('✅ S3 업로드 완료');
 
+      // 3. DB에 파일 메타데이터 저장
       const { data, error } = await supabase
         .from('POPUP')
         .insert([
           {
-            image_url: uploadedUrl,
-            uploaded_by: userId,
+            file_key: fileKey,
+            bucket: bucket,
+            size_bytes: blob.size,
+            mime_type: blob.type,
             order_index: popupList.length + 1,
-            is_active: true, // 기본적으로 활성화
+            is_active: true,
+            user_id: userId,
           },
         ])
         .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('DB 저장 실패:', error);
+        throw error;
+      }
 
+      console.log('💾 DB 저장 완료:', data);
+
+      // 4. 새로 추가된 팝업에 Presigned URL 생성
       if (data && data.length > 0) {
-        setPopupList((prev) => [...prev, data[0]]);
+        const newPopup = data[0];
+        const downloadUrl = await generateDownloadUrl(bucket, fileKey);
+        
+        setPopupList((prev) => [...prev, {
+          ...newPopup,
+          image_url: downloadUrl
+        }]);
       }
 
       alert('✅ 팝업이 성공적으로 등록되었습니다!');
@@ -169,12 +247,12 @@ export default function PopupPage() {
       setCompletedCrop(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err) {
-      console.error(err);
+      console.error('업로드 오류:', err);
       alert('업로드 중 오류가 발생했습니다. 다시 시도해주세요.');
     } finally {
       setUploading(false);
     }
-  }, [completedCrop, userId, popupList]);
+  }, [completedCrop, userId, selectedFile, popupList]);
 
   /** 순서 변경 */
   const handleMove = async (from: number, to: number) => {
@@ -201,7 +279,7 @@ export default function PopupPage() {
   };
 
   /** 활성화/비활성화 토글 */
-  const handleToggleActive = async (popupId: number, currentStatus: boolean) => {
+  const handleToggleActive = async (popupId: string, currentStatus: boolean) => {
     try {
       const { error } = await supabase
         .from('POPUP')
@@ -220,7 +298,7 @@ export default function PopupPage() {
   };
 
   /** 팝업 삭제 */
-  const handleDelete = async (popupId: number) => {
+  const handleDelete = async (popupId: string) => {
     if (!confirm('이 팝업을 삭제하시겠습니까?')) return;
 
     try {
@@ -250,7 +328,8 @@ export default function PopupPage() {
         {/* 헤더 */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">팝업 관리</h1>
-          <p className="text-gray-600">메인 페이지에 표시될 팝업을 등록하고 관리하세요 (크기 자유)</p>
+          <p className="text-gray-600">메인 페이지에 표시될 팝업을 등록하고 관리하세요</p>
+          <p className="text-sm text-purple-600 mt-1">📐 크기 자유 (최대: 800 x 1000px)</p>
         </div>
 
         {/* 업로드 섹션 */}
@@ -280,11 +359,11 @@ export default function PopupPage() {
                   </div>
                   <div>
                     <p className="text-lg font-medium text-gray-700 mb-1">이미지를 선택해주세요</p>
-                    <p className="text-sm text-gray-500">크기 제한 없음 | JPG, PNG 형식</p>
+                    <p className="text-sm text-gray-500">크기 자유 (최대 800x1000) | JPG, PNG 형식</p>
                   </div>
-                  <button className="px-6 py-2.5 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors">
+                  <span className="px-6 py-2.5 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors">
                     파일 선택
-                  </button>
+                  </span>
                 </div>
               </label>
             </div>
@@ -303,19 +382,21 @@ export default function PopupPage() {
                     다시 선택
                   </button>
                 </div>
-                <ReactCrop
-                  crop={crop}
-                  onChange={(pixelCrop: PixelCrop, percentCrop: PercentCrop) => setCrop(percentCrop)}
-                  onComplete={(pixelCrop: PixelCrop) => setCompletedCrop(pixelCrop)}
-                  keepSelection
-                >
-                  <img
-                    ref={imgRef}
-                    src={previewUrl}
-                    alt="preview"
-                    className="max-w-full rounded-lg"
-                  />
-                </ReactCrop>
+                <div className="flex justify-center">
+                  <ReactCrop
+                    crop={crop}
+                    onChange={(pixelCrop: PixelCrop, percentCrop: PercentCrop) => setCrop(percentCrop)}
+                    onComplete={(pixelCrop: PixelCrop) => setCompletedCrop(pixelCrop)}
+                    keepSelection
+                  >
+                    <img
+                      ref={imgRef}
+                      src={previewUrl}
+                      alt="preview"
+                      className="max-w-full rounded-lg"
+                    />
+                  </ReactCrop>
+                </div>
               </div>
 
               <canvas ref={canvasRef} className="hidden" />
@@ -335,7 +416,7 @@ export default function PopupPage() {
                       업로드 중...
                     </span>
                   ) : (
-                    '✅ 팝업 등록하기'
+                    '팝업 등록하기'
                   )}
                 </button>
                 <button
@@ -388,11 +469,15 @@ export default function PopupPage() {
                   </div>
 
                   {/* 이미지 */}
-                  <div className="bg-gray-200 flex items-center justify-center min-h-[200px] max-h-[300px]">
+                  <div className="bg-gray-200 flex items-center justify-center min-h-[200px] max-h-[400px]">
                     <img
-                      src={popup.image_url}
+                      src={popup.image_url || ''}
                       alt={`popup-${i}`}
                       className="w-full h-full object-contain"
+                      onError={(e) => {
+                        console.error('팝업 이미지 로드 실패:', popup.image_url);
+                        e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23ddd" width="100" height="100"/%3E%3Ctext x="50" y="50" text-anchor="middle" fill="%23999"%3EError%3C/text%3E%3C/svg%3E';
+                      }}
                     />
                   </div>
 
