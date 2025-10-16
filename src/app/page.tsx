@@ -1,5 +1,4 @@
-
-import HeroImage from "@/assets/images/main2.png"
+// app/page.tsx
 import {
   FaPhoneAlt,
   FaClipboardList,
@@ -12,8 +11,9 @@ import Link from "next/link";
 import { ROUTE } from "@/constants/route";
 import QuickLinkCard from "@/components/home/QuickLinkCard";
 import NoticeItem from "@/components/home/NoticeItem";
-import Image from "next/image";
 import { createClient } from "@/lib/supabase";
+import Banner from "@/components/Banner";
+import Popup from "@/components/Popup";
 
 const QUICK_LINKS = [
   { label: "기관소개", to: ROUTE.about.greeting },
@@ -69,7 +69,7 @@ async function getLatestNotices() {
   }
 }
 
-// 일자리 소식 조회 (type이 다른 경우)
+// 일자리 소식 조회
 async function getLatestJobs() {
   const supabase = await createClient();
   
@@ -77,7 +77,7 @@ async function getLatestJobs() {
     const { data: jobs, error } = await supabase
       .from('POST')
       .select('id, title, created_at')
-      .eq('type', 'JOB') // 일자리 소식용 타입
+      .eq('type', 'JOB')
       .order('created_at', { ascending: false })
       .limit(5);
 
@@ -101,20 +101,15 @@ export default async function Home() {
 
   return (
     <div className="w-full">
-      {/* Hero 영역 */}
-      <section className="relative w-full h-[400px] bg-gray-100 flex items-center justify-center overflow-hidden">
-        <Image
-          src={HeroImage}
-          alt="메인이미지"
-          className="object-cover object-center"
-          priority
-          fill
-        />
-      </section>
+      {/* 팝업 */}
+      <Popup />
+
+      {/* Hero 영역 - 배너 슬라이더 */}
+      <Banner />
 
       {/* 주요 바로가기 */}
       <section className="bg-blue-500 text-white py-7">
-        <div className="w-full max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+        <div className="w-full max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center px-4">
           {QUICK_LINKS.map(({ label, to }) => (
             <QuickLinkCard key={label} label={label} to={to} />
           ))}
@@ -126,18 +121,18 @@ export default async function Home() {
         {/* 공지사항 */}
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-semibold !text-gray-900">
+            <h2 className="text-2xl font-semibold text-gray-900">
               공지사항{" "}
-              <span className="!text-gray-600 text-lg ml-2">Notice</span>
+              <span className="text-gray-600 text-lg ml-2">Notice</span>
             </h2>
             <Link
               href={ROUTE.notice.announcement}
-              className="!text-gray-800 text-xl hover:!text-blue-500 transition-colors"
+              className="text-gray-800 text-xl hover:text-blue-500 transition-colors"
             >
               ＋
             </Link>
           </div>
-          <ul className="space-y-2 text-sm !text-gray-800">
+          <ul className="space-y-2 text-sm text-gray-800">
             {notices.length === 0 ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <NoticeItem
@@ -170,18 +165,18 @@ export default async function Home() {
         {/* 일자리 소식 */}
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-semibold !text-gray-900">
+            <h2 className="text-2xl font-semibold text-gray-900">
               일자리 소식{" "}
-              <span className="!text-gray-600 text-lg ml-2">Job Info</span>
+              <span className="text-gray-600 text-lg ml-2">Job Info</span>
             </h2>
             <Link 
               href={ROUTE.notice.jobInfo}
-              className="!text-gray-800 text-xl hover:!text-blue-500 transition-colors"
+              className="text-gray-800 text-xl hover:text-blue-500 transition-colors"
             >
               ＋
             </Link>
           </div>
-          <ul className="space-y-2 text-sm !text-gray-800">
+          <ul className="space-y-2 text-sm text-gray-800">
             {jobs.length === 0 ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <NoticeItem
@@ -215,23 +210,23 @@ export default async function Home() {
       {/* 일자리 참여방법 */}
       <section className="bg-gray-50 py-16">
         <div className="max-w-6xl mx-auto text-center px-4">
-          <p className="text-2xl font-bold mb-10 !text-gray-900">일자리참여방법</p>
+          <h2 className="text-2xl font-bold mb-10 text-gray-900">일자리참여방법</h2>
 
           <div className="flex flex-wrap justify-center items-center mt-10 gap-10">
             {PARTICIPATION_STEPS.map(({ label, icon }, i) => (
               <div key={label} className="flex items-center gap-6">
                 {/* 아이콘 카드 */}
                 <div className="flex flex-col items-center">
-                  <div className="w-20 h-20 rounded-md bg-white shadow-md border border-gray-200 flex items-center justify-center">
+                  <div className="w-20 h-20 rounded-md bg-white shadow-md border border-gray-200 flex items-center justify-center transition-transform hover:scale-110">
                     {icon}
                   </div>
-                  <p className="text-sm !text-gray-800 mt-2 font-medium">{label}</p>
+                  <p className="text-sm text-gray-800 mt-2 font-medium">{label}</p>
                 </div>
 
                 {/* 화살표 */}
                 {i < PARTICIPATION_STEPS.length - 1 && (
                   <div className="h-20 flex items-center">
-                    <FaArrowRight className="text-gray-500 text-2xl relative -top-[10px]" />
+                    <FaArrowRight className="text-gray-400 text-2xl relative -top-[10px]" />
                   </div>
                 )}
               </div>
