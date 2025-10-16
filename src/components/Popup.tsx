@@ -27,7 +27,6 @@ export default function Popup() {
   }, [])
 
   const fetchPopups = async () => {
-    // DB에서 활성화된 팝업만 가져오기
     const { data } = await supabase
       .from('POPUP')
       .select('*')
@@ -35,7 +34,6 @@ export default function Popup() {
       .order('order_index', { ascending: true })
     
     if (data) {
-      // Presigned URL 생성
       const popupsWithUrls = await Promise.all(
         data.map(async (popup) => ({
           ...popup,
@@ -45,7 +43,6 @@ export default function Popup() {
       
       setPopups(popupsWithUrls)
       
-      // 오늘 하루 보지 않기 체크
       const hiddenIds = getHiddenPopups()
       const visible = new Set<string>(
         popupsWithUrls
@@ -65,7 +62,6 @@ export default function Popup() {
       const data = JSON.parse(hidden)
       const now = Date.now()
       
-      // 만료 안된 것만 필터링
       const valid = Object.entries(data)
         .filter(([_, expiry]) => (expiry as number) > now)
         .map(([id]) => id)
@@ -104,43 +100,47 @@ export default function Popup() {
         .map((popup, i) => (
           <div
             key={popup.id}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
             style={{ zIndex: 1000 + i }}
           >
-            <div className="relative bg-white rounded-lg shadow-2xl max-w-lg w-full mx-4">
-              <div className="relative w-full" style={{ maxHeight: '80vh' }}>
-                <img
-                  src={popup.image_url}
-                  alt="popup"
-                  className="w-full h-auto rounded-t-lg"
-                  style={{ maxHeight: '80vh', objectFit: 'contain' }}
-                />
+            <div className="relative bg-white rounded-lg shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden">
+              {/* X 버튼 */}
+              <button
+                onClick={() => closePopup(popup.id)}
+                className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 z-10 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
+              {/* 팝업 이미지 - 상단 여백 추가 */}
+              <div className="relative w-full overflow-y-auto" style={{ maxHeight: 'calc(90vh - 60px)' }}>
+                <div className="p-4 pb-0">
+                  <img
+                    src={popup.image_url}
+                    alt="popup"
+                    className="w-full h-auto rounded-t-lg"
+                  />
+                </div>
               </div>
 
-              <div className="flex border-t border-gray-200">
+              {/* 하단 버튼 영역 */}
+              <div className="flex border-t border-gray-200 bg-white">
                 <button
                   onClick={() => closeForToday(popup.id)}
-                  className="flex-1 py-3 text-sm text-gray-600 hover:bg-gray-50"
+                  className="flex-1 py-3 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
                 >
                   오늘 하루 보지 않기
                 </button>
                 <div className="w-px bg-gray-200" />
                 <button
                   onClick={() => closePopup(popup.id)}
-                  className="flex-1 py-3 text-sm text-gray-900 font-medium hover:bg-gray-50"
+                  className="flex-1 py-3 text-sm text-gray-900 font-medium hover:bg-gray-50 transition-colors"
                 >
                   닫기
                 </button>
               </div>
-
-              <button
-                onClick={() => closePopup(popup.id)}
-                className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white rounded-full p-2"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
             </div>
           </div>
         ))}
