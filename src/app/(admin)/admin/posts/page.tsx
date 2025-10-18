@@ -75,7 +75,7 @@ export default function EditorPage() {
                 [{ header: [1, 2, false] }],
                 ['bold', 'italic', 'underline'],
                 [{ list: 'ordered' }, { list: 'bullet' }],
-                ['link', 'image', 'video'], // 에디터의 비디오 embed는 유지 (파일 업로드와는 별개)
+                // ['link', 'image', 'video'], // 에디터의 비디오 embed는 유지 (파일 업로드와는 별개) 일단은 이미지 업로드 비오픈
             ],
         }),
         []
@@ -245,18 +245,18 @@ export default function EditorPage() {
     ].join(',');
 
     return (
-        <div className="px-24 py-12 min-h-screen">
-            <p className="text-2xl font-bold mb-6">게시글 작성</p>
+        <div className="px-24 py-12 min-h-screen bg-gray-50">
+            <p className="text-2xl font-bold mb-6 text-gray-900">게시글 작성</p>
 
             {/* ====== 상단 메타 영역: 카테고리 설정 & 파일 업로드로 분리 ====== */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                 {/* 카테고리 설정 */}
-                <section className="bg-white">
-                    <h3 className="text-sm font-semibold text-gray-700 mb-2">카테고리 설정</h3>
+                <section className="bg-white p-4 rounded-lg border border-gray-200">
+                    <h3 className="text-sm font-semibold text-gray-900 mb-2">카테고리 설정</h3>
                     <select
                         value={type}
                         onChange={(e) => setType(e.target.value)}
-                        className="w-full border border-gray-300 p-2 rounded"
+                        className="w-full border border-gray-300 p-2 rounded text-gray-900"
                     >
                         {Object.entries(CategoryTypeEnumMap).map(([key, value]) => (
                             <option key={key} value={key}>
@@ -267,9 +267,9 @@ export default function EditorPage() {
                 </section>
 
                 {/* 파일 업로드 */}
-                <section className="bg-white">
+                <section className="bg-white p-4 rounded-lg border border-gray-200">
                     <div className="flex items-center gap-2 mb-2">
-                        <h3 className="text-sm font-semibold text-gray-700">파일 업로드</h3>
+                        <h3 className="text-sm font-semibold text-gray-900">파일 업로드</h3>
 
                         {/* 툴팁 아이콘 */}
                         <div className="relative group inline-block">
@@ -302,7 +302,7 @@ export default function EditorPage() {
                             multiple
                             accept={ACCEPT}
                             onChange={handlePickFiles}
-                            className="text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+                            className="text-sm text-gray-900 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
                         />
                     </label>
 
@@ -328,7 +328,7 @@ export default function EditorPage() {
                                             </div>
                                         )}
                                         <div className="text-sm">
-                                            <p className="font-medium">{item.file.name}</p>
+                                            <p className="font-medium text-gray-900">{item.file.name}</p>
                                             <p className="text-gray-500">{(item.file.size / 1024 / 1024).toFixed(2)} MB</p>
                                         </div>
                                     </div>
@@ -336,7 +336,7 @@ export default function EditorPage() {
                                     <button
                                         type="button"
                                         onClick={() => removeFile(idx)}
-                                        className="text-xs px-2 py-1 rounded border border-gray-300 hover:bg-gray-100"
+                                        className="text-xs px-2 py-1 rounded border border-gray-300 hover:bg-gray-100 text-gray-900"
                                     >
                                         삭제
                                     </button>
@@ -356,7 +356,7 @@ export default function EditorPage() {
                 placeholder="제목을 입력하세요"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full border border-gray-300 p-3 mb-4 rounded"
+                className="w-full border border-gray-300 p-3 mb-4 rounded text-gray-900 placeholder:text-gray-400"
             />
 
             {/* 에디터 */}
@@ -376,7 +376,7 @@ export default function EditorPage() {
                 <button
                     onClick={handleSubmit}
                     disabled={isEmpty || uploading}
-                    className="cursor-pointer px-6 py-2 text-white bg-blue-500 hover:bg-blue-700 disabled:bg-gray-500 disabled:cursor-not-allowed rounded font-semibold shadow"
+                    className="cursor-pointer px-6 py-2 text-white bg-blue-500 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded font-semibold shadow"
                 >
                     게시하기
                 </button>
