@@ -16,7 +16,7 @@ export function LoginClient() {
 
     useEffect(() => {
         if (!loading && isAdmin) {
-            router.replace("/admin/editor");
+            router.replace("/admin");
         }
     }, [loading, isAdmin, isError, router]);
 
