@@ -34,5 +34,5 @@ export async function POST(req: Request) {
         //POST→GET 전환을 위해 303 권장
         return NextResponse.redirect(url, { status: 303 });
     }
-    return NextResponse.redirect(new URL("/admin/editor", req.url));
+    return NextResponse.redirect(new URL("/admin", req.url));
 }
