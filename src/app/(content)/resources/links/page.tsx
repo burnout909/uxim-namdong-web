@@ -1,3 +1,4 @@
+import PostContainer from "@/components/post/PostContainer";
 import Title from "@/components/Title";
 
 const LinkDict: Record<string, string> = {
@@ -15,12 +16,10 @@ export default function Link() {
     const items = Object.entries(LinkDict);
 
     return (
-        <div className="px-4 py-12 max-w-screen-xl mx-auto">
-            <Title text="관련 사이트" />
-
-            {/* 안내 배너 */}
-            <div className="mt-6 rounded-md bg-gray-100 text-gray-700 px-6 py-8 text-center text-lg font-semibold">
-                남동 시니어 클럽과 함께하는 관련 기관입니다.
+        <PostContainer>
+            {/* 헤더 */}
+            <div className="min-w-[929px] flex items-center justify-between mb-6">
+                <h1 className="text-heading-large text-gray-900">관련 사이트</h1>
             </div>
 
             {/* 버튼 그리드 */}
@@ -32,13 +31,13 @@ export default function Link() {
                         target="_blank"
                         rel="noopener noreferrer"
                         role="button"
-                        className="group flex items-center justify-center rounded-md border border-gray-200 bg-white px-6 py-10 text-lg text-gray-600 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                        className="group flex items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-10 text-heading-medium text-gray-600 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-colors"
                         aria-label={`${label} 새 창으로 열기`}
                     >
                         {label}
                     </a>
                 ))}
             </div>
-        </div>
+        </PostContainer>
     );
 }

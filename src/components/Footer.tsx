@@ -5,7 +5,7 @@ import Image from "next/image"
 
 export default function Footer() {
   return (
-    <footer className="w-full bg-[#f4f4f4] border-t border-gray-200 py-8 px-20">
+    <footer className="w-full bg-[#f4f4f4] border-t border-gray-200 py-8 px-20 min-w-[1440px] max-w-[1920px] mx-auto">
       <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-6">
         {/* 왼쪽: 로고 및 정보 */}
         <div className="flex flex-col gap-4">

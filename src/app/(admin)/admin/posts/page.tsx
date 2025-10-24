@@ -212,22 +212,26 @@ export default function EditorPage() {
 
             const newPostId = postData[0].id;
 
-            // 2. 파일 테이블 업데이트 (비동기 병렬 처리)
             if (fileKeyList?.length) {
-                const updatePromises = fileKeyList.map(async (key) => {
-                    const { error: fileError } = await supabase
-                        .from("FILE")
-                        .update({ post_id: newPostId })
-                        .eq("file_key", key); // 🔹 file 테이블에 s3_key(또는 file_key) 컬럼 기준
+                const linkPromises = fileKeyList.map(async (key) => {
+                    const { error: linkError } = await supabase
+                        .from("POST_FILE")
+                        .insert([
+                            {
+                                post_id: newPostId,
+                                file_key: key,
+                                role: "ATTACHMENT", // or "THUMBNAIL"
+                            },
+                        ]);
 
-                    if (fileError) throw fileError;
+                    if (linkError) throw linkError;
                 });
 
-                await Promise.all(updatePromises); // 모든 파일 업데이트 완료 대기
+                await Promise.all(linkPromises);
             }
 
             alert("게시글이 등록되었습니다.");
-            router.push("/");
+            window.location.reload()
         } catch (err) {
             console.error("공지사항 등록 실패:", err);
             alert("공지사항 등록에 실패했습니다.");

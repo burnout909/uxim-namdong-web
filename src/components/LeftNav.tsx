@@ -34,7 +34,7 @@ export default function LeftNav({ title, items }: LeftNavProps) {
   return (
     <div className="w-full bg-white border border-gray-200 rounded-md overflow-hidden">
       {/* Title Header */}
-      <div className="py-[42px] bg-[#246BEB] text-white text-center font-semibold text-[20px]">
+      <div className="py-[42px] bg-[#246BEB] text-white text-center text-heading-medium">
         {title}
       </div>
 
@@ -50,7 +50,7 @@ export default function LeftNav({ title, items }: LeftNavProps) {
             <Link
               key={item.path}
               href={item.path}
-              className={`flex items-center px-[28px] py-[13px] text-[16px] text-black ${isActive ? "font-bold" : "hover:bg-gray-100"
+              className={`flex text-body-large items-center px-[28px] py-[13px] text-black ${isActive ? "font-bold" : "hover:bg-gray-100"
                 }`}
             >
               <span>{item.label}</span>
