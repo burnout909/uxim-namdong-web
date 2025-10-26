@@ -1,8 +1,8 @@
-// app/(content)/notice/free/page.tsx
 import PostContainer from "@/components/post/PostContainer";
 import PostList from "@/components/post/PostList";
 import Pagination from "@/components/Pagination";
 import { getPosts, PostType } from "@/services/postService";
+import FreeBoardHeader from "@/components/freeboard/FreeBoardHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -19,9 +19,7 @@ export default async function FreeBoardPage({
     return (
         <PostContainer>
             {/* 헤더 */}
-            <div className="min-w-[929px] flex items-center justify-between mb-6">
-                <h1 className="text-heading-large text-gray-900">자유게시판</h1>
-            </div>
+            <FreeBoardHeader/>
 
             {/* 게시글 목록 */}
             <PostList posts={posts} basePath="/notice/free" />

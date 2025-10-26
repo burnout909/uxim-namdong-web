@@ -1,5 +1,7 @@
 // src/lib/supabase/queries/post.ts
 import { createClient } from '@/lib/supabase';
+import bcrypt from "bcryptjs";
+
 
 export enum PostType {
     NOTICE = 'NOTICE',
@@ -16,7 +18,8 @@ export type Post = {
     contents: string | null;
     created_at: string;
     updated_at: string | null;
-    views?: number | null;
+    is_private?: boolean;
+    password?: string | null
 };
 
 export interface PaginatedPosts {
@@ -24,6 +27,7 @@ export interface PaginatedPosts {
     total: number;
     currentPage: number;
     totalPages: number;
+    is_private?: boolean;
 }
 
 /**
@@ -47,14 +51,18 @@ export async function getPosts(
     // 페이지 데이터 조회
     const { data, error } = await supabase
         .from('POST')
-        .select('id, title, contents, created_at, updated_at')
+        .select('id, title, contents, created_at, updated_at, is_private')
         .eq('type', type)
         .order('created_at', { ascending: false })
         .range(offset, offset + limit - 1);
     if (error) throw error;
 
     const total = count ?? 0;
-    const posts = (data ?? []) as Post[];
+    const posts = (data ?? []).map((post) => ({
+        ...post,
+        title: post.is_private ? '🔒 비공개 글입니다' : post.title,
+        contents: post.is_private ? '' : post.contents,
+    })) as Post[];
 
     return {
         posts,
@@ -76,6 +84,8 @@ export async function getPostDetail(type: string, id: string) {
       contents,
       created_at,
       type,
+      is_private,
+      password,
       POST_FILE (
         role,
         file:FILE!inner(file_key, mime_type, size_bytes, created_at)
@@ -108,4 +118,60 @@ export async function getPostDetail(type: string, id: string) {
     ]);
 
     return { post, prev, next };
+}
+
+/**
+ * 비공개 게시글 비밀번호 검증 함수
+ * @param postId - 게시글 ID
+ * @param inputPassword - 사용자가 입력한 평문 비밀번호
+ * @returns boolean | null (true: 일치, false: 불일치, null: 게시글 없음 또는 비공개 아님)
+ */
+export async function verifyPostPassword(postId: string, inputPassword: string): Promise<boolean | null> {
+    const supabase = await createClient();
+
+    // 게시글 조회 (비공개 글만)
+    const { data: post, error } = await supabase
+        .from("POST")
+        .select("id, password, is_private")
+        .eq("id", postId)
+        .maybeSingle();
+
+    if (error || !post) {
+        console.error("게시글 조회 실패:", error);
+        return null;
+    }
+
+    // 비공개 글이 아니면 검증 불필요
+    if (!post.is_private || !post.password) {
+        return null;
+    }
+
+    // bcrypt 비교
+    try {
+        const isMatch = await bcrypt.compare(inputPassword, post.password);
+        return isMatch;
+    } catch (err) {
+        console.error("비밀번호 검증 중 오류:", err);
+        return false;
+    }
+}
+
+/**
+ * 자유게시판 전체 게시글 조회 (관리자/사용자 분리)
+ */
+export async function getAllFreePosts() {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("POST")
+    .select("id, title, created_at, is_private, is_admin")
+    .eq("type", "FREE")
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+
+  const adminPosts = data?.filter((p) => p.is_admin) ?? [];
+  const userPosts = data?.filter((p) => !p.is_admin) ?? [];
+
+  return { adminPosts, userPosts };
 }
