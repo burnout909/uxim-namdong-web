@@ -5,6 +5,7 @@ import PostMetaInfo from "../post/PostMetaInfo";
 import { formatMetaDate } from "@/utils/post";
 import PostContent from "../post/PostContent";
 import PostNavigator from "../post/PostNavigator";
+import PostReply from "../post/PostReply";
 
 export default function FreeBoardDetailClient({ result }: any) {
   const { post, prev, next } = result;
@@ -64,6 +65,7 @@ export default function FreeBoardDetailClient({ result }: any) {
 
       <PostFileList files={post.POST_FILE ?? []} />
       <PostContent html={post.contents} />
+      <PostReply postId={post.id} />
       <PostNavigator prev={prev} next={next} basePath="/notice/free" />
     </div>
   );

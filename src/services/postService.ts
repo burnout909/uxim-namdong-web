@@ -73,12 +73,12 @@ export async function getPosts(
 }
 
 export async function getPostDetail(type: string, id: string) {
-    const supabase = await createClient();
+  const supabase = await createClient();
 
-    // 1) 현재 글
-    const { data: post, error } = await supabase
-        .from("POST")
-        .select(`
+  // 1) 현재 글 + 파일 + 댓글(join)
+  const { data: post, error } = await supabase
+    .from("POST")
+    .select(`
       id,
       title,
       contents,
@@ -89,35 +89,41 @@ export async function getPostDetail(type: string, id: string) {
       POST_FILE (
         role,
         file:FILE!inner(file_key, mime_type, size_bytes, created_at)
+      ),
+      REPLY (
+        id,
+        contents,
+        created_at,
+        updated_at
       )
     `)
-        .eq("type", type)
-        .eq("id", id)
-        .maybeSingle();
+    .eq("type", type)
+    .eq("id", id)
+    .maybeSingle();
 
-    if (error || !post) return null;
+  if (error || !post) return null;
 
-    // 2) 이전/다음 글
-    const [{ data: prev }, { data: next }] = await Promise.all([
-        supabase
-            .from("POST")
-            .select("id, title, created_at")
-            .eq("type", type)
-            .lt("created_at", post.created_at)
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .maybeSingle(),
-        supabase
-            .from("POST")
-            .select("id, title, created_at")
-            .eq("type", type)
-            .gt("created_at", post.created_at)
-            .order("created_at", { ascending: true })
-            .limit(1)
-            .maybeSingle(),
-    ]);
+  // 2) 이전/다음 글
+  const [{ data: prev }, { data: next }] = await Promise.all([
+    supabase
+      .from("POST")
+      .select("id, title, created_at")
+      .eq("type", type)
+      .lt("created_at", post.created_at)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from("POST")
+      .select("id, title, created_at")
+      .eq("type", type)
+      .gt("created_at", post.created_at)
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle(),
+  ]);
 
-    return { post, prev, next };
+  return { post, prev, next };
 }
 
 /**
@@ -174,4 +180,16 @@ export async function getAllFreePosts() {
   const userPosts = data?.filter((p) => !p.is_admin) ?? [];
 
   return { adminPosts, userPosts };
+}
+
+
+export async function deletePost(id: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("POST").delete().eq("id", id);
+
+  if (error) {
+    console.error("게시글 삭제에 실패했습니다.", error);
+  }
+
+  return true;
 }

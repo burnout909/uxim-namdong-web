@@ -17,11 +17,11 @@ const supabase = createBrowserClient(
 // 카테고리 타입 매핑
 const CategoryTypeEnumMap = {
     'NOTICE': '공지사항',
-    'JOB': '일자리',
+    'JOB': '일자리 소식',
     'PRODUCT': '생산품',
     'FREE': '자유게시판',
-    'PHOTO': '사진게시판',
-    'VIDEO': '동영상게시판'
+    'PHOTO': '사진자료실',
+    'VIDEO': '동영상자료실'
 };
 
 // SSR 비활성화해서 클라이언트에서만 로드
@@ -200,6 +200,7 @@ export default function EditorPage() {
                         contents,
                         user_id: userId,
                         type,
+                        is_admin: true
                     },
                 ])
                 .select(); // Postgres는 insert 후 select() 시 새 행 반환

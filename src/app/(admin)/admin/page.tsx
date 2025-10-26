@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { FaNewspaper, FaImage, FaWindowMaximize } from 'react-icons/fa';
+import { FaNewspaper, FaImage, FaWindowMaximize, FaComments } from 'react-icons/fa';
 
 export default function AdminHomePage() {
   const menus = [
@@ -28,6 +28,14 @@ export default function AdminHomePage() {
       description: '메인 페이지 팝업을 관리합니다',
       color: 'from-green-500 to-green-600',
       hoverColor: 'hover:from-green-600 hover:to-green-700'
+    },
+    { 
+      name: '자유게시판 관리', 
+      href: '/admin/freeboard',
+      icon: <FaComments className="w-12 h-12" />,
+      description: '회원들이 작성한 자유게시판 글을 관리합니다',
+      color: 'from-orange-500 to-orange-600',
+      hoverColor: 'hover:from-orange-600 hover:to-orange-700'
     },
   ];
 
@@ -71,22 +79,15 @@ export default function AdminHomePage() {
 
                 {/* 컨텐츠 */}
                 <div className="relative z-10">
-                  {/* 아이콘 */}
                   <div className="text-white mb-6 transform group-hover:scale-110 transition-transform duration-300">
                     {menu.icon}
                   </div>
-
-                  {/* 제목 */}
                   <h2 className="text-2xl font-bold text-white mb-3">
                     {menu.name}
                   </h2>
-
-                  {/* 설명 */}
                   <p className="text-white/90 text-sm leading-relaxed">
                     {menu.description}
                   </p>
-
-                  {/* 화살표 아이콘 */}
                   <div className="mt-6 flex items-center text-white/80 group-hover:text-white transition-colors">
                     <span className="text-sm font-medium">바로가기</span>
                     <svg 
@@ -103,10 +104,6 @@ export default function AdminHomePage() {
             </Link>
           ))}
         </div>
-
-
-
-
       </div>
     </main>
   );
