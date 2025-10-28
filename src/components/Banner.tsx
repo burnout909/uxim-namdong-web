@@ -15,6 +15,7 @@ interface BannerData {
   file_key: string
   bucket: string
   order_index: number
+  link_url?: string
   image_url?: string
 }
 
@@ -35,14 +36,12 @@ export default function Banner() {
   }, [banners.length])
 
   const fetchBanners = async () => {
-    // DB에서 활성화된 배너만 가져오기
     const { data } = await supabase
       .from('BANNER')
       .select('*')
       .order('order_index', { ascending: true })
     
     if (data) {
-      // Presigned URL 생성
       const bannersWithUrls = await Promise.all(
         data.map(async (banner) => ({
           ...banner,
@@ -55,21 +54,40 @@ export default function Banner() {
 
   if (banners.length === 0) return null
 
+  const currentBanner = banners[currentIndex]
+
+  // 배너 이미지 컴포넌트
+  const BannerImage = () => (
+    <img
+      src={currentBanner.image_url}
+      alt="banner"
+      className="w-full h-full object-cover"
+    />
+  )
+
   return (
     <section className="w-full relative bg-gray-900">
       <div className="relative w-full h-[400px] overflow-hidden">
-        <img
-          src={banners[currentIndex].image_url}
-          alt="banner"
-          className="w-full h-full object-cover"
-        />
+        {/* 링크가 있으면 <a> 태그로 감싸기 */}
+        {currentBanner.link_url ? (
+          <a 
+            href={currentBanner.link_url} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="block w-full h-full cursor-pointer"
+          >
+            <BannerImage />
+          </a>
+        ) : (
+          <BannerImage />
+        )}
       </div>
 
       {banners.length > 1 && (
         <>
           <button
             onClick={() => setCurrentIndex(prev => (prev - 1 + banners.length) % banners.length)}
-            className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-3"
+            className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-3 z-10"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -78,14 +96,14 @@ export default function Banner() {
 
           <button
             onClick={() => setCurrentIndex(prev => (prev + 1) % banners.length)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-3"
+            className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-3 z-10"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
 
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
             {banners.map((_, i) => (
               <button
                 key={i}
