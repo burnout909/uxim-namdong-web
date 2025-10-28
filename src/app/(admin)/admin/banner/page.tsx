@@ -1,3 +1,4 @@
+// app/admin/banner/page.tsx
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
@@ -7,13 +8,11 @@ import { generateUploadUrl, generateDownloadUrl } from '@/app/service/s3';
 import ReactCrop, { type PercentCrop, type PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 
-// Supabase 브라우저 클라이언트
 const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
 );
 
-// 배너 타입 정의
 interface Banner {
   id: string;
   file_key: string;
@@ -21,28 +20,30 @@ interface Banner {
   size_bytes: number;
   mime_type: string;
   order_index: number;
+  link_url?: string;
   user_id: string;
   created_at: string;
   updated_at: string;
-  image_url?: string; // 프론트엔드에서 동적 생성
+  image_url?: string;
 }
 
 // 배너 권장 크기
-const BANNER_WIDTH = 1024;
-const BANNER_HEIGHT = 320;
-const BANNER_RATIO = BANNER_WIDTH / BANNER_HEIGHT; // 3.2:1
+const BANNER_WIDTH = 1200;
+const BANNER_HEIGHT = 400;
+const BANNER_RATIO = BANNER_WIDTH / BANNER_HEIGHT; // 3:1
 
 export default function BannerPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [linkUrl, setLinkUrl] = useState('');
 
   const [crop, setCrop] = useState<PercentCrop>({
     unit: '%',
     x: 10,
     y: 10,
     width: 80,
-    height: 25,
+    height: 27,
   });
   const [completedCrop, setCompletedCrop] = useState<PixelCrop | null>(null);
 
@@ -53,7 +54,6 @@ export default function BannerPage() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // 로그인된 사용자 정보
   useEffect(() => {
     const getUser = async () => {
       const { data } = await supabase.auth.getUser();
@@ -62,7 +62,6 @@ export default function BannerPage() {
     getUser();
   }, []);
 
-  // 배너 목록 불러오기 + Presigned URL 생성
   useEffect(() => {
     const fetchBanners = async () => {
       const { data, error } = await supabase
@@ -76,9 +75,6 @@ export default function BannerPage() {
       }
 
       if (data) {
-        console.log('🎨 배너 데이터:', data);
-        
-        // 각 배너에 대해 Presigned URL 생성
         const bannersWithUrls = await Promise.all(
           data.map(async (banner) => {
             try {
@@ -104,7 +100,6 @@ export default function BannerPage() {
     fetchBanners();
   }, []);
 
-  /** 이미지 선택 */
   const handleSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -119,7 +114,6 @@ export default function BannerPage() {
     setCompletedCrop(null);
   };
 
-  /** 크롭 완료 시 캔버스에 그려두기 (1024x320 고정) */
   useEffect(() => {
     if (!completedCrop || !imgRef.current || !canvasRef.current) return;
 
@@ -131,11 +125,9 @@ export default function BannerPage() {
     const scaleX = image.naturalWidth / image.width;
     const scaleY = image.naturalHeight / image.height;
 
-    // 고정 크기로 캔버스 설정
     canvas.width = BANNER_WIDTH;
     canvas.height = BANNER_HEIGHT;
 
-    // 고해상도로 리사이징
     ctx.drawImage(
       image,
       completedCrop.x * scaleX,
@@ -149,7 +141,6 @@ export default function BannerPage() {
     );
   }, [completedCrop]);
 
-  /** 캔버스 → Blob */
   const getCroppedBlob = (): Promise<Blob> =>
     new Promise((resolve, reject) => {
       if (!canvasRef.current) return reject(new Error('no canvas'));
@@ -159,7 +150,6 @@ export default function BannerPage() {
       }, 'image/jpeg', 0.95);
     });
 
-  /** 업로드 */
   const handleUpload = useCallback(async () => {
     if (!completedCrop || !userId || !selectedFile) {
       alert('이미지를 선택하고 영역을 조정해주세요.');
@@ -174,13 +164,8 @@ export default function BannerPage() {
       const fileExtension = selectedFile.name.split('.').pop() || 'jpg';
       const fileKey = `banners/${uuidv4()}.${fileExtension}`;
       
-      console.log('📤 업로드 시작:', { bucket, fileKey });
-      
-      // 1. Presigned URL 생성 (업로드용)
       const uploadUrl = await generateUploadUrl(bucket, fileKey);
-      console.log('🔗 업로드 URL 생성:', uploadUrl);
 
-      // 2. S3에 업로드
       const response = await fetch(uploadUrl, {
         method: 'PUT',
         headers: { 'Content-Type': blob.type },
@@ -188,13 +173,9 @@ export default function BannerPage() {
       });
 
       if (!response.ok) {
-        console.error('S3 업로드 실패:', response.status, response.statusText);
         throw new Error('S3 업로드 실패');
       }
 
-      console.log('✅ S3 업로드 완료');
-
-      // 3. DB에 파일 메타데이터 저장
       const { data, error } = await supabase
         .from('BANNER')
         .insert([
@@ -204,19 +185,16 @@ export default function BannerPage() {
             size_bytes: blob.size,
             mime_type: blob.type,
             order_index: bannerList.length + 1,
+            link_url: linkUrl || null,
             user_id: userId,
           },
         ])
         .select();
 
       if (error) {
-        console.error('DB 저장 실패:', error);
         throw error;
       }
 
-      console.log('💾 DB 저장 완료:', data);
-
-      // 4. 새로 추가된 배너에 Presigned URL 생성
       if (data && data.length > 0) {
         const newBanner = data[0];
         const downloadUrl = await generateDownloadUrl(bucket, fileKey);
@@ -231,6 +209,7 @@ export default function BannerPage() {
       setSelectedFile(null);
       setPreviewUrl(null);
       setCompletedCrop(null);
+      setLinkUrl('');
       if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err) {
       console.error('업로드 오류:', err);
@@ -238,9 +217,8 @@ export default function BannerPage() {
     } finally {
       setUploading(false);
     }
-  }, [completedCrop, userId, selectedFile, bannerList]);
+  }, [completedCrop, userId, selectedFile, bannerList, linkUrl]);
 
-  /** 순서 변경 */
   const handleMove = async (from: number, to: number) => {
     const updated = [...bannerList];
     const [moved] = updated.splice(from, 1);
@@ -264,7 +242,6 @@ export default function BannerPage() {
     }
   };
 
-  /** 배너 삭제 */
   const handleDelete = async (bannerId: string) => {
     if (!confirm('이 배너를 삭제하시겠습니까?')) return;
 
@@ -280,26 +257,24 @@ export default function BannerPage() {
     }
   };
 
-  /** 이미지 선택 취소 */
   const handleCancelSelect = () => {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setSelectedFile(null);
     setPreviewUrl(null);
     setCompletedCrop(null);
+    setLinkUrl('');
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* 헤더 */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">배너 관리</h1>
           <p className="text-gray-600">메인 페이지에 표시될 배너를 등록하고 관리하세요</p>
-          <p className="text-sm text-blue-600 mt-1">최종 크기: 3.2:1 비율</p>
+          <p className="text-sm text-blue-600 mt-1">📐 최종 크기: 1200 x 400px (3:1 비율)</p>
         </div>
 
-        {/* 업로드 섹션 */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 mb-8">
           <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
             <span className="text-2xl">📤</span>
@@ -307,7 +282,6 @@ export default function BannerPage() {
           </h2>
 
           {!previewUrl ? (
-            /* 파일 선택 영역 */
             <div className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center hover:border-blue-400 hover:bg-blue-50/50 transition-all cursor-pointer">
               <input
                 ref={fileInputRef}
@@ -326,7 +300,7 @@ export default function BannerPage() {
                   </div>
                   <div>
                     <p className="text-lg font-medium text-gray-700 mb-1">이미지를 선택해주세요</p>
-                    <p className="text-sm text-gray-500">최종 크기: 3.2:1 비율 | JPG, PNG 형식</p>
+                    <p className="text-sm text-gray-500">최종 크기: 1200x400 (3:1) | JPG, PNG 형식</p>
                   </div>
                   <span className="px-6 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
                     파일 선택
@@ -335,12 +309,11 @@ export default function BannerPage() {
               </label>
             </div>
           ) : (
-            /* 크롭 영역 */
             <div className="space-y-6">
               <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
                 <div className="mb-3 flex items-center justify-between">
                   <p className="text-sm font-medium text-gray-700">
-                    🎯 배너 영역을 조정하세요
+                    🎯 배너 영역을 조정하세요 (3:1 비율)
                   </p>
                   <button
                     onClick={handleCancelSelect}
@@ -365,6 +338,23 @@ export default function BannerPage() {
                     />
                   </ReactCrop>
                 </div>
+              </div>
+
+              {/* 링크 URL 입력 */}
+              <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
+                <label className="block text-sm font-semibold text-gray-900 mb-2">
+                  🔗 링크 URL (선택사항)
+                </label>
+                <input
+                  type="url"
+                  value={linkUrl}
+                  onChange={(e) => setLinkUrl(e.target.value)}
+                  placeholder="https://example.com"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                />
+                <p className="text-xs text-gray-600 mt-2">
+                  💡 배너 클릭 시 이동할 URL을 입력하세요 (입력하지 않으면 클릭 불가)
+                </p>
               </div>
 
               <canvas ref={canvasRef} className="hidden" />
@@ -399,7 +389,6 @@ export default function BannerPage() {
           )}
         </div>
 
-        {/* 배너 목록 */}
         {bannerList.length > 0 && (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
             <div className="flex items-center justify-between mb-6">
@@ -412,59 +401,67 @@ export default function BannerPage() {
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6">
               {bannerList.map((banner, i) => (
                 <div
                   key={banner.id}
                   className="group relative bg-gray-50 rounded-xl overflow-hidden border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all"
                 >
-                  {/* 순서 뱃지 */}
                   <div className="absolute top-3 left-3 z-10 px-3 py-1 bg-blue-600 text-white text-xs font-bold rounded-full shadow-md">
                     #{i + 1}
                   </div>
 
-                  {/* 이미지 (1024x320 비율) */}
-                  <div className="aspect-[3.2/1] bg-gray-200">
+                  {banner.link_url && (
+                    <div className="absolute top-3 right-3 z-10 px-3 py-1 bg-green-500 text-white text-xs font-bold rounded-full shadow-md">
+                      🔗 링크 있음
+                    </div>
+                  )}
+
+                  <div className="aspect-[3/1] bg-gray-200">
                     <img
                       src={banner.image_url || ''}
                       alt={`banner-${i}`}
                       className="w-full h-full object-cover"
-                      onError={(e) => {
-                        console.error('이미지 로드 실패:', banner.image_url);
-                        e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23ddd" width="100" height="100"/%3E%3Ctext x="50" y="50" text-anchor="middle" fill="%23999"%3EError%3C/text%3E%3C/svg%3E';
-                      }}
                     />
                   </div>
 
-                  {/* 컨트롤 */}
-                  <div className="p-4 flex items-center justify-between gap-2 bg-white">
-                    {/* 순서 변경 */}
+                  <div className="p-4 bg-white space-y-3">
+                    {banner.link_url && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="text-gray-600 font-medium">링크:</span>
+                        <a 
+                          href={banner.link_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 underline truncate flex-1"
+                        >
+                          {banner.link_url}
+                        </a>
+                      </div>
+                    )}
+                    
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleMove(i, i - 1)}
                         disabled={i === 0}
                         className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                        title="왼쪽으로 이동"
                       >
-                        ←
+                        ← 앞으로
                       </button>
                       <button
                         onClick={() => handleMove(i, i + 1)}
                         disabled={i === bannerList.length - 1}
                         className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                        title="오른쪽으로 이동"
                       >
-                        →
+                        뒤로 →
+                      </button>
+                      <button
+                        onClick={() => handleDelete(banner.id)}
+                        className="ml-auto px-4 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors"
+                      >
+                        🗑️ 삭제
                       </button>
                     </div>
-
-                    {/* 삭제 버튼 */}
-                    <button
-                      onClick={() => handleDelete(banner.id)}
-                      className="px-4 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors"
-                    >
-                      🗑️ 삭제
-                    </button>
                   </div>
                 </div>
               ))}
@@ -472,7 +469,6 @@ export default function BannerPage() {
           </div>
         )}
 
-        {/* 빈 상태 */}
         {bannerList.length === 0 && !previewUrl && (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-12 text-center">
             <div className="text-6xl mb-4">🎨</div>

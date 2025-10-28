@@ -15,6 +15,7 @@ interface PopupData {
   file_key: string
   bucket: string
   is_active: boolean
+  link_url?: string
   image_url?: string
 }
 
@@ -91,6 +92,12 @@ export default function Popup() {
     closePopup(id)
   }
 
+  const handlePopupClick = (popup: PopupData) => {
+    if (popup.link_url) {
+      window.open(popup.link_url, '_blank', 'noopener,noreferrer')
+    }
+  }
+
   if (visiblePopups.size === 0) return null
 
   return (
@@ -114,14 +121,31 @@ export default function Popup() {
                 </svg>
               </button>
 
-              {/* 팝업 이미지 - 상단 여백 추가 */}
+              {/* 팝업 이미지 - 링크가 있으면 클릭 가능 */}
               <div className="relative w-full overflow-y-auto" style={{ maxHeight: 'calc(90vh - 60px)' }}>
                 <div className="p-4 pb-0">
-                  <img
-                    src={popup.image_url}
-                    alt="popup"
-                    className="w-full h-auto rounded-t-lg"
-                  />
+                  {popup.link_url ? (
+                    <div
+                      onClick={() => handlePopupClick(popup)}
+                      className="cursor-pointer group"
+                    >
+                      <img
+                        src={popup.image_url}
+                        alt="popup"
+                        className="w-full h-auto rounded-t-lg group-hover:opacity-95 transition-opacity"
+                      />
+                      {/* 링크 힌트 아이콘 */}
+                      <div className="absolute top-6 left-6 bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        🔗 클릭하여 이동
+                      </div>
+                    </div>
+                  ) : (
+                    <img
+                      src={popup.image_url}
+                      alt="popup"
+                      className="w-full h-auto rounded-t-lg"
+                    />
+                  )}
                 </div>
               </div>
 
