@@ -20,6 +20,12 @@ export function LoginClient() {
         }
     }, [loading, isAdmin, isError, router]);
 
+    useEffect(() => {
+        if (error) {
+            alert(error);
+        }
+    }, [error]);
+
     return (
         <main className="min-h-[600px] grid place-items-center bg-white from-slate-50 to-slate-100 p-4">
             <section className="w-full max-w-md bg-white border border-gray-200 rounded-2xl p-5 shadow-lg">

@@ -24,8 +24,13 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   const supabase = await createClient();
-  const { postId, contents, userId } = await req.json();
-  const { error } = await supabase.from("REPLY").insert({ post_id: postId, contents, user_id: userId ?? null });
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { postId, contents } = await req.json();
+  const { error } = await supabase.from("REPLY").insert({ post_id: postId, contents, user_id: user.id });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
@@ -33,6 +38,11 @@ export async function POST(req: Request) {
 
 export async function PATCH(req: Request) {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const { id, contents } = await req.json();
   const { error } = await supabase.from("REPLY").update({ contents }).eq("id", id);
 
@@ -42,6 +52,11 @@ export async function PATCH(req: Request) {
 
 export async function DELETE(req: Request) {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const { id } = await req.json();
   const { error } = await supabase.from("REPLY").delete().eq("id", id);
 

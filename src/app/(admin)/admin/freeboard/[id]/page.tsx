@@ -14,9 +14,10 @@ export const dynamic = "force-dynamic";
 async function handleDelete(formData: FormData) {
   "use server";
   const id = formData.get("id") as string;
-  const res = await deletePost(id);
-  console.log(res);
-  redirect("/admin/freeboard");
+  const ok = await deletePost(id);
+  if (ok) {
+    redirect("/admin/freeboard");
+  }
 }
 
 export default async function AdminFreeBoardDetail({
