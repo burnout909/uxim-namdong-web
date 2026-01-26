@@ -2,16 +2,14 @@
 import { useMemo, useState, useEffect, useCallback, type ChangeEvent } from "react";
 import 'react-quill-new/dist/quill.snow.css';
 import dynamic from "next/dynamic";
-import { createBrowserClient } from '@supabase/ssr';
+import { createBrowserSupabaseClient } from '@/lib/supabase-browser';
 import { generateUploadUrl } from "@/app/service/s3";
 import { v4 as uuidv4 } from "uuid";
 import { formatMetaDate } from "@/utils/post";
+import { useAuth } from "@/hooks/useAuth";
 
 // 브라우저용 Supabase 클라이언트
-const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-);
+const supabase = createBrowserSupabaseClient();
 
 // 카테고리 타입 매핑 (자유게시판 제외)
 const CategoryTypeEnumMap = {
@@ -42,9 +40,11 @@ type LocalFile = {
 };
 
 export default function AdminPostPage() {
+    const { user } = useAuth();
+    const userId = user?.id ?? null;
+
     const [title, setTitle] = useState("");
     const [contents, setContents] = useState("");
-    const [userId, setUserId] = useState<string | null>(null);
     const [type, setType] = useState<keyof typeof CategoryTypeEnumMap>('NOTICE');
     const [postList, setPostList] = useState<PostSummary[]>([]);
     const [listLoading, setListLoading] = useState(false);
@@ -58,15 +58,6 @@ export default function AdminPostPage() {
     const [files, setFiles] = useState<LocalFile[]>([]);
     const [uploading, setUploading] = useState(false);
     const [fileKeyList, setFileKeyList] = useState<string[]>([]);
-
-    // 사용자 정보 가져오기
-    useEffect(() => {
-        const getUserInfo = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) setUserId(user.id);
-        };
-        getUserInfo();
-    }, []);
 
     // 카테고리별 관리자 게시글 목록 로드
     const fetchPostList = useCallback(async (targetPage: number) => {

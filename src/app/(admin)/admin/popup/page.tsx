@@ -2,16 +2,14 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { createBrowserClient } from '@supabase/ssr';
+import { createBrowserSupabaseClient } from '@/lib/supabase-browser';
 import { v4 as uuidv4 } from 'uuid';
 import { generateUploadUrl, generateDownloadUrl } from '@/app/service/s3';
 import ReactCrop, { type PercentCrop, type PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
+import { useAuth } from '@/hooks/useAuth';
 
-const supabase = createBrowserClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-);
+const supabase = createBrowserSupabaseClient();
 
 interface Popup {
   id: string;
@@ -32,7 +30,9 @@ const MAX_POPUP_WIDTH = 800;
 const MAX_POPUP_HEIGHT = 1000;
 
 export default function PopupPage() {
-  const [userId, setUserId] = useState<string | null>(null);
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [linkUrl, setLinkUrl] = useState('');
@@ -54,14 +54,6 @@ export default function PopupPage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (data?.user) setUserId(data.user.id);
-    };
-    getUser();
-  }, []);
-
-  useEffect(() => {
     const fetchPopups = async () => {
       const { data, error } = await supabase
         .from('POPUP')
@@ -75,7 +67,7 @@ export default function PopupPage() {
 
       if (data) {
         const popupsWithUrls = await Promise.all(
-          data.map(async (popup) => {
+          data.map(async (popup: Popup) => {
             try {
               const downloadUrl = await generateDownloadUrl(popup.bucket, popup.file_key);
               return {

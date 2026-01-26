@@ -2,16 +2,14 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { createBrowserClient } from '@supabase/ssr';
+import { createBrowserSupabaseClient } from '@/lib/supabase-browser';
 import { v4 as uuidv4 } from 'uuid';
 import { generateUploadUrl, generateDownloadUrl } from '@/app/service/s3';
 import ReactCrop, { type PercentCrop, type PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
+import { useAuth } from '@/hooks/useAuth';
 
-const supabase = createBrowserClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-);
+const supabase = createBrowserSupabaseClient();
 
 interface Banner {
   id: string;
@@ -33,7 +31,9 @@ const BANNER_HEIGHT = 400;
 const BANNER_RATIO = BANNER_WIDTH / BANNER_HEIGHT; // 3:1
 
 export default function BannerPage() {
-  const [userId, setUserId] = useState<string | null>(null);
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [linkUrl, setLinkUrl] = useState('');
@@ -55,14 +55,6 @@ export default function BannerPage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (data?.user) setUserId(data.user.id);
-    };
-    getUser();
-  }, []);
-
-  useEffect(() => {
     const fetchBanners = async () => {
       const { data, error } = await supabase
         .from('BANNER')
@@ -76,7 +68,7 @@ export default function BannerPage() {
 
       if (data) {
         const bannersWithUrls = await Promise.all(
-          data.map(async (banner) => {
+          data.map(async (banner: Banner) => {
             try {
               const downloadUrl = await generateDownloadUrl(banner.bucket, banner.file_key);
               return {
