@@ -151,7 +151,11 @@ export default function BannerPage() {
     });
 
   const handleUpload = useCallback(async () => {
-    if (!completedCrop || !userId || !selectedFile) {
+    if (!userId) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+    if (!completedCrop || !selectedFile) {
       alert('이미지를 선택하고 영역을 조정해주세요.');
       return;
     }
@@ -362,10 +366,12 @@ export default function BannerPage() {
               <div className="flex gap-3">
                 <button
                   onClick={handleUpload}
-                  disabled={uploading || !completedCrop}
+                  disabled={uploading || !completedCrop || !userId}
                   className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-md disabled:shadow-none"
                 >
-                  {uploading ? (
+                  {!userId ? (
+                    '로그인 필요'
+                  ) : uploading ? (
                     <span className="flex items-center justify-center gap-2">
                       <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />

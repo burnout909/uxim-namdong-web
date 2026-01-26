@@ -185,10 +185,18 @@ export async function getAllFreePosts() {
 
 export async function deletePost(id: string) {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    console.error("삭제 권한이 없습니다.");
+    return false;
+  }
   const { error } = await supabase.from("POST").delete().eq("id", id);
 
   if (error) {
     console.error("게시글 삭제에 실패했습니다.", error);
+    return false;
   }
 
   return true;

@@ -29,7 +29,7 @@ export async function POST(req: Request) {
 
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-        const url = new URL("/admin/login", req.url);
+        const url = new URL("/admin/sign-in", req.url);
         url.searchParams.set("error", error.message);
         //POST→GET 전환을 위해 303 권장
         return NextResponse.redirect(url, { status: 303 });

@@ -117,22 +117,23 @@ export default async function Home() {
       </section>
 
       {/* 공지사항 + 일자리 소식 */}
-      <section className="w-full max-w-6xl mx-auto py-12 grid md:grid-cols-2 gap-12 px-4">
+      <section className="w-full max-w-6xl mx-auto py-16 grid md:grid-cols-2 gap-8 px-4">
         {/* 공지사항 */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-semibold text-gray-900">
-              공지사항{" "}
-              <span className="text-gray-600 text-lg ml-2">Notice</span>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-5 pb-4 border-b-2 border-blue-500">
+            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+              <span className="w-1 h-6 bg-blue-500 rounded-full"></span>
+              공지사항
+              <span className="text-gray-400 text-sm font-normal ml-1">Notice</span>
             </h2>
             <Link
               href={ROUTE.notice.announcement}
-              className="text-gray-800 text-xl hover:text-blue-500 transition-colors"
+              className="text-sm text-gray-500 hover:text-blue-500 transition-colors flex items-center gap-1"
             >
-              ＋
+              더보기 <FaArrowRight className="text-xs" />
             </Link>
           </div>
-          <ul className="space-y-2 text-sm text-gray-800">
+          <ul className="text-sm">
             {notices.length === 0 ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <NoticeItem
@@ -143,10 +144,10 @@ export default async function Home() {
               ))
             ) : (
               notices.map((notice) => (
-                <Link 
-                  key={notice.id} 
+                <Link
+                  key={notice.id}
                   href={`/notice/announcement/${notice.id}`}
-                  className="block hover:bg-gray-50 transition-colors rounded"
+                  className="block"
                 >
                   <NoticeItem
                     title={notice.title}
@@ -163,20 +164,21 @@ export default async function Home() {
         </div>
 
         {/* 일자리 소식 */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-semibold text-gray-900">
-              일자리 소식{" "}
-              <span className="text-gray-600 text-lg ml-2">Job Info</span>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-5 pb-4 border-b-2 border-green-500">
+            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+              <span className="w-1 h-6 bg-green-500 rounded-full"></span>
+              일자리 소식
+              <span className="text-gray-400 text-sm font-normal ml-1">Job Info</span>
             </h2>
-            <Link 
+            <Link
               href={ROUTE.notice.jobInfo}
-              className="text-gray-800 text-xl hover:text-blue-500 transition-colors"
+              className="text-sm text-gray-500 hover:text-green-500 transition-colors flex items-center gap-1"
             >
-              ＋
+              더보기 <FaArrowRight className="text-xs" />
             </Link>
           </div>
-          <ul className="space-y-2 text-sm text-gray-800">
+          <ul className="text-sm">
             {jobs.length === 0 ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <NoticeItem
@@ -187,10 +189,10 @@ export default async function Home() {
               ))
             ) : (
               jobs.map((job) => (
-                <Link 
-                  key={job.id} 
-                  href={`/notice/job-info/${job.id}`} 
-                  className="block hover:bg-gray-50 transition-colors rounded"
+                <Link
+                  key={job.id}
+                  href={`/notice/job-info/${job.id}`}
+                  className="block"
                 >
                   <NoticeItem
                     title={job.title}

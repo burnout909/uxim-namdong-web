@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createBrowserClient } from "@supabase/ssr";
-
 type VerifyAdminState = {
     loading: boolean;
     isAdmin: boolean;
@@ -12,29 +10,21 @@ type VerifyAdminState = {
 export function useVerifyAdmin(): VerifyAdminState {
     const [state, setState] = useState<VerifyAdminState>({
         loading: true,
-        isAdmin: true,
+        isAdmin: false,
         error: null,
     });
 
     useEffect(() => {
-        const supabase = createBrowserClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-        );
-
+        let active = true;
         async function checkAdmin() {
             try {
-                const {
-                    data: { user },
-                    error,
-                } = await supabase.auth.getUser();
-
-                if (error) throw error;
-                if (!user) {
-                    setState({ loading: false, isAdmin: false, error: null });
-                    return;
-                }
+                const res = await fetch("/api/auth/me", { cache: "no-store" });
+                if (!res.ok) throw new Error("Failed to verify admin");
+                const data = await res.json();
+                if (!active) return;
+                setState({ loading: false, isAdmin: !!data?.isAdmin, error: null });
             } catch (err: any) {
+                if (!active) return;
                 setState({
                     loading: false,
                     isAdmin: false,
@@ -44,6 +34,9 @@ export function useVerifyAdmin(): VerifyAdminState {
         }
 
         checkAdmin();
+        return () => {
+            active = false;
+        };
     }, []);
 
     return state;
