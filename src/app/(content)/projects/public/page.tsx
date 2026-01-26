@@ -48,7 +48,7 @@ export default function PublicService() {
 
       {/* 공익활동 소개 */}
       <div className="mt-14">
-        <h2 className="text-purple-700 text-xl md:text-2xl font-bold mb-4">
+        <h2 className="text-blue-700 text-xl md:text-2xl font-bold mb-4">
           공익활동사업이란?
         </h2>
         <div className="space-y-3 pl-2 text-[16px] md:text-[17px] leading-relaxed">
@@ -76,8 +76,8 @@ export default function PublicService() {
       <div className="border-t border-gray-300 my-10" />
 
       {/* 신청 안내 */}
-      <div className="bg-purple-50 border border-purple-200 rounded-xl p-6 shadow-sm">
-        <h2 className="text-lg md:text-xl font-bold text-purple-800 mb-4">
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 shadow-sm">
+        <h2 className="text-lg md:text-xl font-bold text-blue-800 mb-4">
           신청 안내
         </h2>
         <ul className="space-y-2 text-[15px] md:text-[16px] leading-relaxed">
@@ -98,7 +98,7 @@ export default function PublicService() {
             </ul>
           </li>
         </ul>
-        <p className="text-[14px] mt-4 text-purple-600">
+        <p className="text-[14px] mt-4 text-blue-600">
           ※ 진행되는 사업은{" "}
           <strong className="text-red-500">2024년 확정 내시</strong>에 따라
           달라질 수 있습니다.

@@ -41,7 +41,7 @@ export default function CapacityMain() {
 
       {/* 사업 소개 */}
       <div className="mt-14">
-        <h2 className="text-purple-700 text-xl md:text-2xl font-bold mb-4">
+        <h2 className="text-blue-700 text-xl md:text-2xl font-bold mb-4">
           사회서비스형 사업이란?
         </h2>
         <div className="space-y-3 pl-2 text-[16px] md:text-[17px] leading-relaxed">

@@ -11,7 +11,7 @@ export default function Employment() {
 
       {/* 사업 소개 */}
       <div className="mt-8">
-        <h2 className="text-purple-700 text-xl md:text-2xl font-bold mb-4">
+        <h2 className="text-blue-700 text-xl md:text-2xl font-bold mb-4">
           취업알선형이란?
         </h2>
         <div className="space-y-3 pl-2 text-[16px] md:text-[17px] leading-relaxed">
