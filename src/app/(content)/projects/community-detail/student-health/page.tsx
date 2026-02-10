@@ -6,7 +6,7 @@ import StudentImage from "@/assets/images/community/studentHealth.png";
 export default function Student() {
   return (
     <div className="flex justify-center">
-      <div className="relative w-[700px] h-auto">
+      <div className="relative w-full max-w-[700px] h-auto">
         <Image
           src={StudentImage}
           alt="학생건강지킴이"

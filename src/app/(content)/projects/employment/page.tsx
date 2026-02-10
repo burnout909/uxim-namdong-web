@@ -48,7 +48,7 @@ export default function Employment() {
       
       <div className="max-w-screen-md mx-auto px-4">
         <div className="!mt-10 flex justify-center">
-          <div className="relative w-[700px] h-auto">
+          <div className="relative w-full max-w-[700px] h-auto">
             <Image
               src={ConnectJobImage}
               alt="취업알선형"

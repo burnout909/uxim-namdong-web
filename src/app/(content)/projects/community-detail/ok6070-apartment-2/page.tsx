@@ -6,7 +6,7 @@ import OK2Image from "@/assets/images/community/nonhyunapartment.png";
 export default function OK2() {
   return (
     <div className="flex justify-center">
-      <div className="relative w-[700px] h-auto">
+      <div className="relative w-full max-w-[700px] h-auto">
         <Image
           src={OK2Image}
           alt="OK2"

@@ -6,7 +6,7 @@ import common2 from "@/assets/images/community/commonWork2.jpg";
 export default function Common2() {
   return (
     <div className="flex justify-center">
-      <div className="relative w-[700px] h-auto">
+      <div className="relative w-full max-w-[700px] h-auto">
         <Image
           src={common2}
           alt="공동작업장2"

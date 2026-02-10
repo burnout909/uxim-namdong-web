@@ -24,7 +24,7 @@ export default function Location() {
                         인천광역시 남동구 남동서로62번길 13 (구월동, 남동구노인복지관)
                     </p>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-100">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <h3 className="text-xl text-blue-500 font-semibold mb-2">전화</h3>
                             <p>032-267-6080</p>

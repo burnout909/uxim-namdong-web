@@ -20,7 +20,7 @@ export default async function ProductAnnouncementDetail({
   const { post, prev, next } = result;
 
   return (
-    <div className="min-w-[929px] mx-auto pb-12 px-6">
+    <div className="pb-12 px-2 md:px-6">
       <h1 className="text-heading-large">생산품 소식</h1>
       <div className="pt-6">
         <h2 className="text-heading-medium text-gray-900">

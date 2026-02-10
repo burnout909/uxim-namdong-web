@@ -204,7 +204,7 @@ export default function PostPage() {
     ].join(',');
 
     return (
-        <div className="min-w-[929px]">
+        <div className="w-full">
             <h1 className="text-heading-large text-gray-900">자유게시판</h1>
             <PostForm/>
         </div>

@@ -6,7 +6,7 @@ import HelperImage from "@/assets/images/capacity/helper.png";
 export default function Helper() {
   return (
     <div className="flex justify-center">
-      <div className="relative w-[700px] h-auto">
+      <div className="relative w-full max-w-[700px] h-auto">
         <Image
           src={HelperImage}
           alt="행정도우미"

@@ -6,7 +6,7 @@ import MealImage from "@/assets/images/public/meal.png";
 export default function Meal() {
   return (
     <div className="flex justify-center">
-      <div className="relative w-[700px] h-auto">
+      <div className="relative w-full max-w-[700px] h-auto">
         <Image
           src={MealImage}
           alt="meal"

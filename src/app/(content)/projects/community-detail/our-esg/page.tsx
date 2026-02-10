@@ -6,7 +6,7 @@ import ESG from "@/assets/images/community/resourceUsage.png";
 export default function Esg() {
   return (
     <div className="flex justify-center">
-      <div className="relative w-[700px] h-auto">
+      <div className="relative w-full max-w-[700px] h-auto">
         <Image
           src={ESG}
           alt="esg"

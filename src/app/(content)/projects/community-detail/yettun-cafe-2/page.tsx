@@ -6,7 +6,7 @@ import yettunImage2 from "@/assets/images/community/yettunCafeSorae.png";
 export default function yettun2() {
   return (
     <div className="flex justify-center">
-      <div className="relative w-[700px] h-auto">
+      <div className="relative w-full max-w-[700px] h-auto">
         <Image
           src={yettunImage2}
           alt="예뜰2"

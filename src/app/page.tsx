@@ -214,23 +214,13 @@ export default async function Home() {
         <div className="max-w-6xl mx-auto text-center px-4">
           <h2 className="text-2xl font-bold mb-10 text-gray-900">일자리참여방법</h2>
 
-          <div className="flex flex-wrap justify-center items-center mt-10 gap-10">
-            {PARTICIPATION_STEPS.map(({ label, icon }, i) => (
-              <div key={label} className="flex items-center gap-6">
-                {/* 아이콘 카드 */}
-                <div className="flex flex-col items-center">
-                  <div className="w-20 h-20 rounded-md bg-white shadow-md border border-gray-200 flex items-center justify-center transition-transform hover:scale-110">
-                    {icon}
-                  </div>
-                  <p className="text-sm text-gray-800 mt-2 font-medium">{label}</p>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-6 md:gap-10 mt-10">
+            {PARTICIPATION_STEPS.map(({ label, icon }) => (
+              <div key={label} className="flex flex-col items-center">
+                <div className="w-20 h-20 rounded-md bg-white shadow-md border border-gray-200 flex items-center justify-center transition-transform hover:scale-110">
+                  {icon}
                 </div>
-
-                {/* 화살표 */}
-                {i < PARTICIPATION_STEPS.length - 1 && (
-                  <div className="h-20 flex items-center">
-                    <FaArrowRight className="text-gray-400 text-2xl relative -top-[10px]" />
-                  </div>
-                )}
+                <p className="text-sm text-gray-800 mt-2 font-medium">{label}</p>
               </div>
             ))}
           </div>

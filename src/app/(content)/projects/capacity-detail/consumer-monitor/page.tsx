@@ -6,7 +6,7 @@ import ConsumerMonitorImage from "@/assets/images/capacity/monitor.png";
 export default function ConsumerMonitor() {
   return (
     <div className="flex justify-center">
-      <div className="relative w-[700px] h-auto">
+      <div className="relative w-full max-w-[700px] h-auto">
         <Image
           src={ConsumerMonitorImage}
           alt="시니어소비피해예방모니터요원"

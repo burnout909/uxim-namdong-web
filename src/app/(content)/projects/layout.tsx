@@ -24,8 +24,8 @@ export default function ProjectsLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex w-full min-h-screen max-w-[1440px] mx-auto mt-5">
-      <aside className="w-[200px] shrink-0 mr-[100px]">
+    <div className="flex flex-col md:flex-row w-full min-h-screen max-w-[1440px] mx-auto mt-5">
+      <aside className="w-full md:w-[200px] shrink-0 md:mr-[100px]">
         <LeftNav title="사업소개" items={projectItems} />
       </aside>
       <section className="flex-grow">

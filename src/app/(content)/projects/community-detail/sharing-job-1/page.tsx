@@ -6,7 +6,7 @@ import common from "@/assets/images/community/sarang.png";
 export default function Common() {
   return (
     <div className="flex justify-center">
-      <div className="relative w-[700px] h-auto">
+      <div className="relative w-full max-w-[700px] h-auto">
         <Image
           src={common}
           alt="공동작업장"

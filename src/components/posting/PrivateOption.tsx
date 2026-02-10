@@ -18,7 +18,7 @@ export default function PrivateOption({
   };
 
   return (
-    <div className="flex gap-5 mb-4">
+    <div className="flex flex-col md:flex-row gap-3 md:gap-5 mb-4">
       <div className="flex items-center gap-8 h-[48px]">
         <label className="flex items-center gap-2 cursor-pointer">
           <input

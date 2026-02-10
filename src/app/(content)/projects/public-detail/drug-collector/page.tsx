@@ -6,7 +6,7 @@ import DrugImage from "@/assets/images/public/drug.png";
 export default function Drug() {
   return (
     <div className="flex justify-center">
-      <div className="relative w-[700px] h-auto">
+      <div className="relative w-full max-w-[700px] h-auto">
         <Image
           src={DrugImage}
           alt="esg"

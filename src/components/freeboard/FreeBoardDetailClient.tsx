@@ -51,7 +51,7 @@ export default function FreeBoardDetailClient({ result }: any) {
   }
 
   return (
-    <div className="min-w-[929px] mx-auto pb-12 px-6">
+    <div className="pb-12 px-2 md:px-6">
       <h1 className="text-heading-large">자유게시판</h1>
       <div className="pt-6">
         <h2 className="text-heading-medium text-gray-900">

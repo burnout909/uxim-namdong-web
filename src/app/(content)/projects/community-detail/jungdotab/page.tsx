@@ -6,7 +6,7 @@ import jungdodam from "@/assets/images/community/jungdodam.png";
 export default function Jungdodam() {
   return (
     <div className="flex justify-center">
-      <div className="relative w-[700px] h-auto">
+      <div className="relative w-full max-w-[700px] h-auto">
         <Image
           src={jungdodam}
           alt="jungdodam"

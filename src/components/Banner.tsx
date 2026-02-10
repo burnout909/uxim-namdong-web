@@ -67,7 +67,7 @@ export default function Banner() {
 
   return (
     <section className="w-full relative bg-gray-900">
-      <div className="relative w-full h-[400px] overflow-hidden">
+      <div className="relative w-full h-[200px] md:h-[400px] overflow-hidden">
         {/* 링크가 있으면 <a> 태그로 감싸기 */}
         {currentBanner.link_url ? (
           <a 

@@ -18,9 +18,9 @@ export default function PostListItem({
 }: PostListItemProps) {
   return (
     <div
-      className="grid grid-cols-12 items-center gap-4 px-6 py-4 hover:bg-gray-50 cursor-pointer transition-colors"
+      className="grid grid-cols-12 items-center gap-2 md:gap-4 px-4 md:px-6 py-4 hover:bg-gray-50 cursor-pointer transition-colors"
     >
-      <div className="col-span-6">
+      <div className="col-span-8 md:col-span-6">
         <Link
           href={`${basePath}/${id}`}
           className="text-gray-900 line-clamp-1 text-body-medium"
@@ -28,14 +28,14 @@ export default function PostListItem({
           {title ?? "제목 없음"}
         </Link>
       </div>
-      <div className="col-span-3 text-gray-500 text-body-medium">
+      <div className="col-span-4 md:col-span-3 text-gray-500 text-body-medium text-sm md:text-base">
         {new Date(created_at).toLocaleDateString("ko-KR", {
           year: "numeric",
           month: "long",
           day: "numeric",
         })}
       </div>
-      <div className="col-span-3 text-end text-center text-gray-500 text-body-medium">
+      <div className="hidden md:block col-span-3 text-end text-center text-gray-500 text-body-medium">
         {author}
       </div>
     </div>

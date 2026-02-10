@@ -6,7 +6,7 @@ import yettunImage from "@/assets/images/community/yettunCafeNamdong.png";
 export default function yettun() {
   return (
     <div className="flex justify-center">
-      <div className="relative w-[700px] h-auto">
+      <div className="relative w-full max-w-[700px] h-auto">
         <Image
           src={yettunImage}
           alt="예뜰"

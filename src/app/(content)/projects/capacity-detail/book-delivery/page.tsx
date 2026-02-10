@@ -6,7 +6,7 @@ import BookImage from "@/assets/images/capacity/book.png";
 export default function BookDelivery() {
   return (
     <div className="flex justify-center">
-      <div className="relative w-[700px] h-auto">
+      <div className="relative w-full max-w-[700px] h-auto">
         <Image
           src={BookImage}
           alt="북딜리버리"

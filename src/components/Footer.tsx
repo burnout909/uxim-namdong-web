@@ -38,9 +38,9 @@ const PARTNER_ORGANIZATIONS: {
 
 export default function Footer() {
   return (
-    <footer className="w-full bg-[#f4f4f4] border-t border-gray-200 min-w-[1440px] max-w-[1920px] mx-auto">
+    <footer className="w-full bg-[#f4f4f4] border-t border-gray-200">
       {/* 기존 Footer 콘텐츠 */}
-      <div className="py-8 px-20">
+      <div className="px-[20px] py-[20px] md:px-20 md:py-8">
         <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-6">
           {/* 왼쪽: 로고 및 정보 */}
           <div className="flex flex-col gap-4">
@@ -56,9 +56,9 @@ export default function Footer() {
         </div>
 
         {/* Copyright 영역 */}
-        <div className="mt-8 border-t border-gray-300 pt-4 flex items-center justify-between">
+        <div className="mt-8 border-t border-gray-300 pt-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <span className="text-sm text-gray-500">{FooterText.copyright}</span>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
             {PARTNER_ORGANIZATIONS.map((partner) => (
               <Link
                 key={partner.name}

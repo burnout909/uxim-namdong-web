@@ -4,5 +4,5 @@ export default function PostContainer({
 }: {
   children: React.ReactNode;
 }) {
-  return <div className="px-6 pb-12">{children}</div>;
+  return <div className="px-2 md:px-6 pb-12">{children}</div>;
 }

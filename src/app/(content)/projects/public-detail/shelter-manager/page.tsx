@@ -6,7 +6,7 @@ import ManagerImage from "@/assets/images/public/manager.png";
 export default function Manager() {
   return (
     <div className="flex justify-center">
-      <div className="relative w-[700px] h-auto">
+      <div className="relative w-full max-w-[700px] h-auto">
         <Image
           src={ManagerImage}
           alt="manager"

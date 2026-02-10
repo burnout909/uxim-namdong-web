@@ -35,9 +35,9 @@ export default function Mission() {
                 <h3 className="text-xl font-bold text-gray-800 mb-8">
                     🌟 핵심가치 (Core Values)
                 </h3>
-                <div className="grid grid-cols-2 mt-15 md:grid-cols-4 gap-6 justify-center">
+                <div className="grid grid-cols-2 mt-15 md:grid-cols-4 gap-4 md:gap-6 justify-center">
                     <div className="flex flex-col items-center text-center">
-                        <div className="w-44 h-44 rounded-full bg-blue-50 border-[5px] border-blue-400 shadow-md flex flex-col items-center justify-center px-4 text-center">
+                        <div className="w-36 h-36 md:w-44 md:h-44 rounded-full bg-blue-50 border-[5px] border-blue-400 shadow-md flex flex-col items-center justify-center px-4 text-center">
                             <h4 className="text-blue-600 font-bold text-lg mb-1">소통</h4>
                             {/* 🔵 소통 아래 파란색 구분선 */}
                             <div className="w-8 h-0.5 bg-blue-600 my-2 rounded-full" />
@@ -52,7 +52,7 @@ export default function Mission() {
 
                     {/* 도전 */}
                     <div className="flex flex-col items-center text-center">
-                        <div className="w-44 h-44 rounded-full bg-green-50 border-[5px] border-green-600 shadow-md flex flex-col items-center justify-center px-4 text-center">
+                        <div className="w-36 h-36 md:w-44 md:h-44 rounded-full bg-green-50 border-[5px] border-green-600 shadow-md flex flex-col items-center justify-center px-4 text-center">
                             <h4 className="text-green-700 font-bold text-lg mb-1">도전</h4>
                             <div className="w-8 h-0.5 bg-green-700 my-2 rounded-full" />
                             <p className="text-sm text-gray-700 leading-tight">
@@ -65,7 +65,7 @@ export default function Mission() {
 
                     {/* 신뢰 */}
                     <div className="flex flex-col items-center text-center">
-                        <div className="w-44 h-44 rounded-full bg-orange-50 border-[5px] border-orange-500 shadow-md flex flex-col items-center justify-center px-4 text-center">
+                        <div className="w-36 h-36 md:w-44 md:h-44 rounded-full bg-orange-50 border-[5px] border-orange-500 shadow-md flex flex-col items-center justify-center px-4 text-center">
                             <h4 className="text-orange-600 font-bold text-lg mb-1">신뢰</h4>
                             <div className="w-8 h-0.5 bg-orange-600 my-2 rounded-full" />
                             <p className="text-sm text-gray-700 leading-tight">
@@ -78,7 +78,7 @@ export default function Mission() {
 
                     {/* 존중 */}
                     <div className="flex flex-col items-center text-center">
-                        <div className="w-44 h-44 rounded-full bg-red-50 border-[5px] border-red-600 shadow-md flex flex-col items-center justify-center px-4 text-center">
+                        <div className="w-36 h-36 md:w-44 md:h-44 rounded-full bg-red-50 border-[5px] border-red-600 shadow-md flex flex-col items-center justify-center px-4 text-center">
                             <h4 className="text-red-600 font-bold text-lg mb-1">존중</h4>
                             <div className="w-8 h-0.5 bg-red-600 my-2 rounded-full" />
                             <p className="text-sm text-gray-700 leading-tight">

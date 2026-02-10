@@ -19,7 +19,7 @@ export default async function PhotoBoardPage({
   return (
     <PostContainer>
       {/* 헤더 */}
-      <div className="min-w-[929px] flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6">
         <h1 className="text-heading-large text-gray-900">사진자료실</h1>
       </div>
 

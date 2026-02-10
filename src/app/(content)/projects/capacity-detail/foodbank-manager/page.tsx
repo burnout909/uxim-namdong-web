@@ -6,7 +6,7 @@ import FoodImage from "@/assets/images/capacity/food.png";
 export default function Food() {
   return (
     <div className="flex justify-center">
-      <div className="relative w-[700px] h-auto">
+      <div className="relative w-full max-w-[700px] h-auto">
         <Image
           src={FoodImage}
           alt="푸드뱅크관리사"

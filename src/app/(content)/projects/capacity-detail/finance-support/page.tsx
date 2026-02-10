@@ -6,7 +6,7 @@ import FinaceImage from "@/assets/images/capacity/coin.png";
 export default function FianeSupportor() {
   return (
     <div className="flex justify-center">
-      <div className="relative w-[700px] h-auto">
+      <div className="relative w-full max-w-[700px] h-auto">
         <Image
           src={FinaceImage}
           alt="시니어금융업무지원사업"

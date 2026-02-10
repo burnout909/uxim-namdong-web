@@ -6,7 +6,7 @@ import FacilityImage from "@/assets/images/public/safe.png";
 export default function Facility() {
   return (
     <div className="flex justify-center">
-      <div className="relative w-[700px] h-auto">
+      <div className="relative w-full max-w-[700px] h-auto">
         <Image
           src={FacilityImage}
           alt="시설"

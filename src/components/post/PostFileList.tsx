@@ -26,7 +26,7 @@ export default function PostFileList({ files }: PostFileListProps) {
         return (
           <div
             key={file.file_key}
-            className="flex items-center justify-between rounded-md bg-[#EEF2F7] px-4 py-3 text-body-small"
+            className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between rounded-md bg-[#EEF2F7] px-4 py-3 text-body-small"
           >
             <div className="flex items-center gap-2 text-gray-500">
               <DownloadIcon width={20} height={20} className="shrink-0" />

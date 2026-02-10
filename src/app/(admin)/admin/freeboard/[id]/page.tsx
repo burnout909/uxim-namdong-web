@@ -32,7 +32,7 @@ export default async function AdminFreeBoardDetail({
   const { post, prev, next } = result;
 
   return (
-    <div className="min-w-[929px] mx-auto pb-12 px-6 max-w-[1440px] mt-10 mb-8">
+    <div className="mx-auto pb-12 px-2 md:px-6 max-w-[1440px] mt-10 mb-8">
       <div className="flex items-center justify-between">
         <h1 className="text-heading-large">자유게시판</h1>
         {/* 삭제 버튼 */}

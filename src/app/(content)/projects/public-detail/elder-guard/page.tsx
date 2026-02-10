@@ -6,7 +6,7 @@ import GuardImage from "@/assets/images/public/guard.png";
 export default function Guard() {
   return (
     <div className="flex justify-center">
-      <div className="relative w-[700px] h-auto">
+      <div className="relative w-full max-w-[700px] h-auto">
         <Image
           src={GuardImage}
           alt="guard"

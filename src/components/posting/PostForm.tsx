@@ -70,7 +70,7 @@ export default function PostForm() {
 
     return (
 
-        <div className="min-w-[929px] flex-col w-full flex space-y-4 justify-between my-6">
+        <div className="flex-col w-full flex space-y-4 justify-between my-6">
             <PrivateOption isPrivate={isPrivate} setIsPrivate={setIsPrivate} password={password} setPassword={setPassword} />
             <TitleInput title={title} setTitle={setTitle} />
             <Editor contents={contents} setContents={setContents} />

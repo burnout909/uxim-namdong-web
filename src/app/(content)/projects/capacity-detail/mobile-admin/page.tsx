@@ -6,7 +6,7 @@ import OfficeImage from "@/assets/images/capacity/office.png";
 export default function Moblile() {
   return (
     <div className="flex justify-center">
-      <div className="relative w-[700px] h-auto">
+      <div className="relative w-full max-w-[700px] h-auto">
         <Image
           src={OfficeImage}
           alt="모바일도우미"

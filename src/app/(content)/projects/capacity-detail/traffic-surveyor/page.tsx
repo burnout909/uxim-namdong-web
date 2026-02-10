@@ -6,7 +6,7 @@ import TrafficImage from "@/assets/images/capacity/traffic.png";
 export default function Traffic() {
   return (
     <div className="flex justify-center">
-      <div className="relative w-[700px] h-auto">
+      <div className="relative w-full max-w-[700px] h-auto">
         <Image
           src={TrafficImage}
           alt="교통관리사"
