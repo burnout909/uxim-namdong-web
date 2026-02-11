@@ -61,13 +61,13 @@ export default function Banner() {
     <img
       src={currentBanner.image_url}
       alt="banner"
-      className="w-full h-full object-cover"
+      className="w-full h-auto md:h-full md:object-cover"
     />
   )
 
   return (
-    <section className="w-full relative bg-gray-900">
-      <div className="relative w-full h-[200px] md:h-[400px] overflow-hidden">
+    <section className="w-full relative bg-white">
+      <div className="relative w-full h-auto md:h-[400px] overflow-hidden">
         {/* 링크가 있으면 <a> 태그로 감싸기 */}
         {currentBanner.link_url ? (
           <a 
