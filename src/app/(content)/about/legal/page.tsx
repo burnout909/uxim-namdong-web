@@ -2,18 +2,42 @@ import Title from "@/components/Title";
 
 export default function Legal() {
     return (
-        <div className="px-6 py-10">
+        <div className="py-8 md:py-10">
             <Title text="법인 소개" />
 
             {/* 운영법인 정보 */}
             <div className="mt-6">
-                <p className="text-lg font-bold text-gray-800">
+                <p className="text-base md:text-lg font-bold text-gray-800">
                     운영법인 : <span className="text-blue-900">사단법인 대한노인회인천남동구지회</span>
                 </p>
             </div>
 
-            {/* 법인 상세 정보 표 */}
-            <div className="mt-6 overflow-x-auto">
+            {/* 법인 상세 정보 표 - 모바일용 카드 */}
+            <div className="mt-6 block md:hidden space-y-4">
+                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                    <div className="space-y-3">
+                        <div>
+                            <span className="text-xs text-gray-500 block">기관명</span>
+                            <span className="text-sm font-medium text-gray-800">(사)대한노인회 인천남동구지회</span>
+                        </div>
+                        <div>
+                            <span className="text-xs text-gray-500 block">위치</span>
+                            <span className="text-sm font-medium text-gray-800">인천광역시 남동구 소래로 610</span>
+                        </div>
+                        <div>
+                            <span className="text-xs text-gray-500 block">설립일</span>
+                            <span className="text-sm font-medium text-gray-800">1988. 01. 01</span>
+                        </div>
+                        <div>
+                            <span className="text-xs text-gray-500 block">상급기관</span>
+                            <span className="text-sm font-medium text-gray-800">(사)대한노인회</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* 법인 상세 정보 표 - 데스크톱용 테이블 */}
+            <div className="mt-6 hidden md:block overflow-x-auto">
                 <table className="w-full border border-gray-300 text-sm text-gray-800">
                     <thead className="bg-gray-100">
                         <tr>
@@ -32,13 +56,12 @@ export default function Legal() {
                         </tr>
                     </tbody>
                 </table>
-                <p className="text-xs text-right mt-1">(단위: ㎡)</p>
             </div>
 
             {/* 설립 목적 */}
             <div className="mt-8">
-                <h3 className="text-lg font-bold text-gray-800 mb-2">설립 목적</h3>
-                <ul className="list-disc list-inside space-y-2 text-[15px] text-gray-700 leading-relaxed">
+                <h3 className="text-base md:text-lg font-bold text-gray-800 mb-2">설립 목적</h3>
+                <ul className="list-disc list-inside space-y-2 text-sm md:text-[15px] text-gray-700 leading-relaxed">
                     <li>
                         노인권익신장, 복지증진, 사회봉사 활동 등을 통한 사회를 책임지고 선도하는 노인상 구현
                     </li>

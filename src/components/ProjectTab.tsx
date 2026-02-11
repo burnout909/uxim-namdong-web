@@ -10,11 +10,11 @@ export default function ProjectTab({
   onTabClick,
 }: ProjectTabProps) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-6">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mb-6">
       {tabs.map((tab) => (
         <button
           key={tab}
-          className={`px-4 py-2 rounded-md text-sm border transition
+          className={`px-3 md:px-4 py-2 md:py-2.5 rounded-md text-xs md:text-sm border transition
             ${
               activeTab === tab
                 ? "font-bold !text-blue-700 border-blue-500"

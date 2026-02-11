@@ -4,8 +4,8 @@ export default function ContentLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <div className="flex flex-grow w-full px-[20px] py-[20px] md:px-20 md:py-8">
-            <section className="flex-grow">
+        <div className="flex flex-grow w-full py-4 md:py-8 overflow-x-hidden">
+            <section className="flex-grow min-w-0 w-full">
                 {children}
             </section>
         </div>
