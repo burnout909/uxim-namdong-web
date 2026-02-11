@@ -28,12 +28,12 @@ export default function Introduction() {
   ];
 
   return (
-    <div className="px-6 py-12 max-w-screen-lg mx-auto">
+    <div className="py-8 md:py-12 max-w-screen-lg mx-auto">
       <Title text="시니어클럽 소개" />
 
       {/* 메인 소개 섹션 */}
-      <div className="mt-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+      <div className="mt-8 md:mt-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-start">
           {/* 텍스트 영역 */}
           <div className="text-gray-800 leading-relaxed text-[16px] space-y-6">
             <p>
@@ -78,19 +78,19 @@ export default function Introduction() {
       </div>
 
       {/* 일자리 유형 섹션 */}
-      <div className="mt-20">
-        <h3 className="text-xl font-bold mb-8 text-center text-gray-900">
+      <div className="mt-12 md:mt-20">
+        <h3 className="text-lg md:text-xl font-bold mb-6 md:mb-8 text-center text-gray-900">
           노인일자리 사업 유형
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
           {jobTypes.map((job) => (
             <div
               key={job.title}
-              className={`${job.bgColor} text-gray-800 p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300`}
+              className={`${job.bgColor} text-gray-800 p-4 md:p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300`}
             >
-              <h4 className="text-lg font-bold mb-3 text-gray-900">{job.title}</h4>
-              <p className="text-sm leading-relaxed text-gray-700">{job.description}</p>
+              <h4 className="text-sm md:text-lg font-bold mb-2 md:mb-3 text-gray-900">{job.title}</h4>
+              <p className="text-xs md:text-sm leading-relaxed text-gray-700">{job.description}</p>
             </div>
           ))}
         </div>

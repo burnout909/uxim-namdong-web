@@ -28,10 +28,10 @@ const HEADER_MENUS: Record<HeaderLabel, { defaultPath: string; subMenus: SubMenu
   사업소개: {
     defaultPath: ROUTE.projects.publicService,
     subMenus: [
-      { label: "공익활동형", path: ROUTE.projects.publicService },
-      { label: "사회서비스형", path: ROUTE.projects.capacity },
-      { label: "시장형", path: ROUTE.projects.community },
-      { label: "취업연계형", path: ROUTE.projects.employment },
+      { label: "노인공익활동사업", path: ROUTE.projects.publicService },
+      { label: "노인역량활동사업", path: ROUTE.projects.capacity },
+      { label: "공동체사업단", path: ROUTE.projects.community },
+      { label: "취업지원", path: ROUTE.projects.employment },
     ],
   },
   소통공간: {

@@ -27,11 +27,11 @@ export default function CapacityMain() {
   };
 
   return (
-    <div className="px-6 md:px-10 py-10 max-w-screen-lg mx-auto text-gray-800">
+    <div className="py-8 md:py-10 max-w-screen-lg mx-auto text-gray-800">
       <Title text="노인역량활용사업" />
 
       {/* 탭 버튼 */}
-      <div className="mt-10">
+      <div className="mt-6 md:mt-10">
         <ProjectTab
           tabs={tabList.map((t) => t.name)}
           activeTab={""}
@@ -40,11 +40,11 @@ export default function CapacityMain() {
       </div>
 
       {/* 사업 소개 */}
-      <div className="mt-14">
-        <h2 className="text-blue-700 text-xl md:text-2xl font-bold mb-4">
+      <div className="mt-8 md:mt-14">
+        <h2 className="text-blue-700 text-lg md:text-2xl font-bold mb-3 md:mb-4">
           사회서비스형 사업이란?
         </h2>
-        <div className="space-y-3 pl-2 text-[16px] md:text-[17px] leading-relaxed">
+        <div className="space-y-2 md:space-y-3 text-sm md:text-[17px] leading-relaxed">
           <p>
             <strong className="font-semibold">사업의 정의</strong>: 노인의
             경력과 활동역량을 활용하여 사회적 도움이 필요한 영역(지역사회 돌봄,
@@ -58,7 +58,7 @@ export default function CapacityMain() {
             <strong className="font-semibold">사업대상</strong>: 인천시 남동구
             거주 만 65세 이상 사업특성 적합자
             <br />
-            <span className="text-sm text-gray-600 ml-2">
+            <span className="text-xs md:text-sm text-gray-600 ml-2">
               ※ 일부 유형 만 60세 이상 참여 가능
             </span>
           </p>

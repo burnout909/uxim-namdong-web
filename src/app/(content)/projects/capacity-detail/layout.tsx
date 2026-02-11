@@ -32,16 +32,16 @@ export default function CapacityDetailLayout({
   const activeTab = tabList.find((tab) => tab.path === pathname)?.name || "";
 
   return (
-    <div className="px-6 md:px-10 py-10 max-w-screen-lg mx-auto text-gray-800">
+    <div className="py-8 md:py-10 max-w-screen-lg mx-auto text-gray-800">
       <Title text="노인역량활용사업" />
-      <div className="mt-10">
+      <div className="mt-6 md:mt-10">
         <ProjectTab
           tabs={tabList.map((t) => t.name)}
           activeTab={activeTab}
           onTabClick={handleTabClick}
         />
       </div>
-      <div className="mt-10">{children}</div>
+      <div className="mt-6 md:mt-10">{children}</div>
     </div>
   );
 }

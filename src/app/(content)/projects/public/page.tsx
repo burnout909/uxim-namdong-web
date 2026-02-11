@@ -34,24 +34,24 @@ export default function PublicService() {
   };
 
   return (
-    <div className="px-6 md:px-10 py-10 max-w-screen-lg mx-auto text-gray-800">
+    <div className="py-8 md:py-10 max-w-screen-lg mx-auto text-gray-800">
       <Title text="노인공익활동사업" />
 
       {/* 탭 버튼 */}
-      <div className="mt-10">
+      <div className="mt-6 md:mt-10">
         <ProjectTab
           tabs={tabList.map((t) => t.name)}
-          activeTab={""} // activeTab은 더 이상 필요 X
+          activeTab={""}
           onTabClick={handleTabClick}
         />
       </div>
 
       {/* 공익활동 소개 */}
-      <div className="mt-14">
-        <h2 className="text-blue-700 text-xl md:text-2xl font-bold mb-4">
+      <div className="mt-8 md:mt-14">
+        <h2 className="text-blue-700 text-lg md:text-2xl font-bold mb-3 md:mb-4">
           공익활동사업이란?
         </h2>
-        <div className="space-y-3 pl-2 text-[16px] md:text-[17px] leading-relaxed">
+        <div className="space-y-2 md:space-y-3 text-sm md:text-[17px] leading-relaxed">
           <p>
             <strong className="font-semibold">사업의 정의</strong>: 노인이
             자기만족과 성취감 향상 및 지역사회 공익 증진을 위해 참여하는
@@ -73,14 +73,14 @@ export default function PublicService() {
       </div>
 
       {/* 구분선 */}
-      <div className="border-t border-gray-300 my-10" />
+      <div className="border-t border-gray-300 my-6 md:my-10" />
 
       {/* 신청 안내 */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 shadow-sm">
-        <h2 className="text-lg md:text-xl font-bold text-blue-800 mb-4">
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 md:p-6 shadow-sm">
+        <h2 className="text-base md:text-xl font-bold text-blue-800 mb-3 md:mb-4">
           신청 안내
         </h2>
-        <ul className="space-y-2 text-[15px] md:text-[16px] leading-relaxed">
+        <ul className="space-y-2 text-sm md:text-[16px] leading-relaxed">
           <li>
             ● <strong>구비서류</strong>: 주민등록등본 1통, 사진 2매, 신청서 1부,
             개인정보동의서
@@ -90,7 +90,7 @@ export default function PublicService() {
           </li>
           <li>
             ● <strong>제외대상</strong>:
-            <ul className="ml-4 list-disc list-inside">
+            <ul className="ml-4 list-disc list-inside mt-1">
               <li>국민기초생활보장법에 의한 생계급여 수급권자</li>
               <li>타 정부부처 일자리 사업 참여자</li>
               <li>건강보험 직장가입자</li>
@@ -98,7 +98,7 @@ export default function PublicService() {
             </ul>
           </li>
         </ul>
-        <p className="text-[14px] mt-4 text-blue-600">
+        <p className="text-xs md:text-[14px] mt-3 md:mt-4 text-blue-600">
           ※ 진행되는 사업은{" "}
           <strong className="text-red-500">2024년 확정 내시</strong>에 따라
           달라질 수 있습니다.

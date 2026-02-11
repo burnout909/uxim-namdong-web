@@ -2,9 +2,9 @@ import Title from "@/components/Title";
 
 export default function History() {
   return (
-    <div className="px-6 py-10 bg-white">
+    <div className="py-8 md:py-10 bg-white">
       <Title text="기관연혁" />
-      <ul className="!mt-6 space-y-2 text-[15px] leading-[24px] text-gray-800">
+      <ul className="!mt-6 space-y-2 text-sm md:text-[15px] leading-relaxed md:leading-[24px] text-gray-800">
         <li>◯ 2022.02.28. 남동시니어클럽 개관식 및 제1대 관장 취임</li>
         <li>◯ 2022.03.01. 남동시니어클럽 개관</li>
         <li>◯ 2022.03.18. 무료취업정보센터 개소</li>

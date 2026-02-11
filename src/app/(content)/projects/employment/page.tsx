@@ -6,15 +6,15 @@ import ConnectJobImage from "@/assets/images/employment/connectJob.png";
 
 export default function Employment() {
   return (
-    <div className="px-6 md:px-10 py-10 max-w-screen-lg mx-auto text-gray-800">
+    <div className="py-8 md:py-10 max-w-screen-lg mx-auto text-gray-800">
       <Title text="취업지원사업" />
 
       {/* 사업 소개 */}
-      <div className="mt-8">
-        <h2 className="text-blue-700 text-xl md:text-2xl font-bold mb-4">
+      <div className="mt-6 md:mt-8">
+        <h2 className="text-blue-700 text-lg md:text-2xl font-bold mb-3 md:mb-4">
           취업알선형이란?
         </h2>
-        <div className="space-y-3 pl-2 text-[16px] md:text-[17px] leading-relaxed">
+        <div className="space-y-2 md:space-y-3 text-sm md:text-[17px] leading-relaxed">
           <p>
             <strong className="font-semibold">사업의 정의</strong>: 수요처의
             요구에 의해서 일정 교육을 수료하거나 관련된 업무능력이 있는 자를
@@ -45,9 +45,9 @@ export default function Employment() {
           </p>
         </div>
       </div>
-      
-      <div className="max-w-screen-md mx-auto px-4">
-        <div className="!mt-10 flex justify-center">
+
+      <div className="max-w-screen-md mx-auto">
+        <div className="mt-8 md:mt-10 flex justify-center">
           <div className="relative w-full max-w-[700px] h-auto">
             <Image
               src={ConnectJobImage}

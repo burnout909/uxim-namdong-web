@@ -13,11 +13,11 @@ const aboutItems = [
 
 export default function AboutLayout({ children }: Readonly<{ children: React.ReactNode }>) {
     return (
-        <div className="flex flex-col md:flex-row w-full min-h-screen max-w-[1440px] mx-auto mt-5">
-            <aside className="w-full md:w-[200px] shrink-0 md:mr-[100px]">
+        <div className="flex flex-col md:flex-row w-full max-w-[1440px] mx-auto px-4 md:px-5">
+            <aside className="w-full md:w-[200px] shrink-0 md:mr-[60px]">
                 <LeftNav title="기관소개" items={aboutItems} />
             </aside>
-            <section className="flex-grow">
+            <section className="flex-1 min-w-0">
                 {children}
             </section>
         </div>
