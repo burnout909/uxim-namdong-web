@@ -21,12 +21,39 @@ type BusinessMenuItem = {
   category: Category
   name: string
   slug: string
-  description: string | null
   image_key: string | null
   image_bucket: string | null
   image_url?: string
   order_index: number
   is_active: boolean
+}
+
+type PageContentFields = {
+  sectionTitle: string
+  definition: string
+  period: string
+  target: string
+  targetNote: string
+  activity: string
+  activityNote: string
+  documents: string
+  method: string
+  exclusions: string
+  notice: string
+}
+
+const EMPTY_CONTENT: PageContentFields = {
+  sectionTitle: '',
+  definition: '',
+  period: '',
+  target: '',
+  targetNote: '',
+  activity: '',
+  activityNote: '',
+  documents: '',
+  method: '',
+  exclusions: '',
+  notice: '',
 }
 
 export default function AdminBusinessPage() {
@@ -36,14 +63,17 @@ export default function AdminBusinessPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
-  // 폼 상태
+  // 항목 폼 상태
   const [editingItem, setEditingItem] = useState<BusinessMenuItem | null>(null)
   const [formName, setFormName] = useState('')
   const [formSlug, setFormSlug] = useState('')
-  const [formDescription, setFormDescription] = useState('')
   const [formImageFile, setFormImageFile] = useState<File | null>(null)
   const [formImagePreview, setFormImagePreview] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
+
+  // 페이지 본문 필드
+  const [pageContent, setPageContent] = useState<PageContentFields>(EMPTY_CONTENT)
+  const [contentSaving, setContentSaving] = useState(false)
 
   const fetchMenuItems = useCallback(async () => {
     setLoading(true)
@@ -54,7 +84,6 @@ export default function AdminBusinessPage() {
       .order('order_index', { ascending: true })
 
     if (!error && data) {
-      // 이미지 URL 생성
       const withUrls = await Promise.all(
         data.map(async (item: Record<string, string | null>) => {
           let image_url: string | undefined
@@ -69,15 +98,33 @@ export default function AdminBusinessPage() {
     setLoading(false)
   }, [activeCategory])
 
+  const fetchPageContent = useCallback(async () => {
+    const { data } = await supabase
+      .from('SITE_CONFIG')
+      .select('config_value')
+      .eq('config_key', `business_page_${activeCategory}`)
+      .single()
+
+    if (data?.config_value) {
+      try {
+        setPageContent({ ...EMPTY_CONTENT, ...JSON.parse(data.config_value) })
+      } catch {
+        setPageContent(EMPTY_CONTENT)
+      }
+    } else {
+      setPageContent(EMPTY_CONTENT)
+    }
+  }, [activeCategory])
+
   useEffect(() => {
     fetchMenuItems()
-  }, [fetchMenuItems])
+    fetchPageContent()
+  }, [fetchMenuItems, fetchPageContent])
 
   const resetForm = () => {
     setEditingItem(null)
     setFormName('')
     setFormSlug('')
-    setFormDescription('')
     setFormImageFile(null)
     setFormImagePreview(null)
     setShowForm(false)
@@ -87,7 +134,6 @@ export default function AdminBusinessPage() {
     setEditingItem(item)
     setFormName(item.name)
     setFormSlug(item.slug)
-    setFormDescription(item.description || '')
     setFormImagePreview(item.image_url || null)
     setFormImageFile(null)
     setShowForm(true)
@@ -103,7 +149,6 @@ export default function AdminBusinessPage() {
     setFormImagePreview(URL.createObjectURL(file))
   }
 
-  // 슬러그 자동 생성
   const generateSlug = (name: string) => {
     return name
       .toLowerCase()
@@ -122,7 +167,6 @@ export default function AdminBusinessPage() {
       let imageKey = editingItem?.image_key || null
       let imageBucket = editingItem?.image_bucket || null
 
-      // 이미지 업로드
       if (formImageFile) {
         const ext = formImageFile.name.split('.').pop()
         imageKey = `business/${activeCategory}/${uuidv4()}.${ext}`
@@ -140,13 +184,11 @@ export default function AdminBusinessPage() {
       const slug = formSlug.trim() || generateSlug(formName)
 
       if (editingItem) {
-        // 수정
         const { error } = await supabase
           .from('BUSINESS_MENU')
           .update({
             name: formName.trim(),
             slug,
-            description: formDescription.trim() || null,
             image_key: imageKey,
             image_bucket: imageBucket,
             updated_at: new Date().toISOString(),
@@ -156,7 +198,6 @@ export default function AdminBusinessPage() {
         if (error) throw error
         alert('사업 항목이 수정되었습니다.')
       } else {
-        // 새로 추가
         const maxOrder = menuItems.length > 0
           ? Math.max(...menuItems.map(m => m.order_index))
           : 0
@@ -167,7 +208,6 @@ export default function AdminBusinessPage() {
             category: activeCategory,
             name: formName.trim(),
             slug,
-            description: formDescription.trim() || null,
             image_key: imageKey,
             image_bucket: imageBucket,
             order_index: maxOrder + 1,
@@ -220,7 +260,6 @@ export default function AdminBusinessPage() {
     const next = [...menuItems]
     ;[next[index], next[target]] = [next[target], next[index]]
 
-    // DB 순서 업데이트
     await Promise.all(
       next.map((item, i) =>
         supabase
@@ -233,12 +272,39 @@ export default function AdminBusinessPage() {
     fetchMenuItems()
   }
 
+  const updateField = (field: keyof PageContentFields, value: string) => {
+    setPageContent(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleSaveContent = async () => {
+    if (!user) return
+    setContentSaving(true)
+
+    try {
+      const { error } = await supabase
+        .from('SITE_CONFIG')
+        .upsert({
+          config_key: `business_page_${activeCategory}`,
+          config_value: JSON.stringify(pageContent),
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'config_key' })
+
+      if (error) throw error
+      alert('페이지 내용이 저장되었습니다.')
+    } catch (err) {
+      console.error(err)
+      alert('저장 중 오류가 발생했습니다.')
+    } finally {
+      setContentSaving(false)
+    }
+  }
+
   return (
     <div className="px-6 lg:px-16 py-12 min-h-screen bg-gray-50">
       <div className="max-w-5xl mx-auto">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">사업 관리</h1>
         <p className="text-sm text-gray-500 mb-8">
-          사업 카테고리별 메뉴 항목을 추가/수정/삭제하고 순서를 변경할 수 있습니다.
+          사업 카테고리별 메뉴 항목과 페이지 내용을 관리할 수 있습니다.
         </p>
 
         {/* 카테고리 탭 */}
@@ -258,7 +324,7 @@ export default function AdminBusinessPage() {
           ))}
         </div>
 
-        {/* 목록 */}
+        {/* 항목 목록 */}
         <section className="bg-white rounded-lg border border-gray-200 shadow-sm mb-6">
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
             <h2 className="text-lg font-semibold text-gray-900">
@@ -283,7 +349,6 @@ export default function AdminBusinessPage() {
             <div className="divide-y divide-gray-100">
               {menuItems.map((item, index) => (
                 <div key={item.id} className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50">
-                  {/* 순서 */}
                   <div className="flex flex-col gap-0.5">
                     <button
                       onClick={() => moveItem(index, 'up')}
@@ -301,7 +366,6 @@ export default function AdminBusinessPage() {
                     </button>
                   </div>
 
-                  {/* 이미지 */}
                   {item.image_url ? (
                     <img src={item.image_url} alt={item.name} className="w-14 h-14 object-cover rounded border border-gray-200" />
                   ) : (
@@ -310,7 +374,6 @@ export default function AdminBusinessPage() {
                     </div>
                   )}
 
-                  {/* 정보 */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-gray-900">{item.name}</span>
@@ -319,12 +382,8 @@ export default function AdminBusinessPage() {
                       )}
                     </div>
                     <p className="text-xs text-gray-400 mt-0.5 truncate">/{item.slug}</p>
-                    {item.description && (
-                      <p className="text-xs text-gray-500 mt-1 truncate">{item.description}</p>
-                    )}
                   </div>
 
-                  {/* 액션 */}
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleToggleActive(item.id, item.is_active)}
@@ -355,9 +414,9 @@ export default function AdminBusinessPage() {
           )}
         </section>
 
-        {/* 추가/수정 폼 */}
+        {/* 항목 추가/수정 폼 */}
         {showForm && (
-          <section id="business-form" className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+          <section id="business-form" className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 mb-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               {editingItem ? '사업 항목 수정' : '새 사업 항목 추가'}
             </h3>
@@ -389,17 +448,6 @@ export default function AdminBusinessPage() {
                 <p className="text-xs text-gray-400 mt-1">
                   URL에 사용될 이름입니다. 비워두면 자동 생성됩니다.
                 </p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">설명</label>
-                <textarea
-                  value={formDescription}
-                  onChange={(e) => setFormDescription(e.target.value)}
-                  placeholder="사업에 대한 간단한 설명"
-                  rows={3}
-                  className="w-full border border-gray-200 rounded px-3 py-2 text-sm text-gray-900 resize-none"
-                />
               </div>
 
               <div>
@@ -435,6 +483,151 @@ export default function AdminBusinessPage() {
             </div>
           </section>
         )}
+
+        {/* 페이지 내용 편집 */}
+        <section className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-1">
+            페이지 내용 편집
+          </h3>
+          <p className="text-sm text-gray-500 mb-6">
+            {CATEGORIES.find(c => c.value === activeCategory)?.label} 페이지에 표시되는 텍스트를 수정합니다. 레이아웃은 자동 유지됩니다.
+          </p>
+
+          <div className="space-y-4">
+            <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+              <h4 className="text-sm font-bold text-blue-800 mb-3">사업 소개 영역</h4>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">섹션 제목 (예: 공익활동사업이란?)</label>
+                  <input
+                    type="text"
+                    value={pageContent.sectionTitle}
+                    onChange={(e) => updateField('sectionTitle', e.target.value)}
+                    placeholder="공익활동사업이란?"
+                    className="w-full border border-gray-200 rounded px-3 py-2 text-sm text-gray-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">사업의 정의</label>
+                  <textarea
+                    value={pageContent.definition}
+                    onChange={(e) => updateField('definition', e.target.value)}
+                    placeholder="노인이 자기만족과 성취감 향상 및..."
+                    rows={2}
+                    className="w-full border border-gray-200 rounded px-3 py-2 text-sm text-gray-900 resize-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">사업기간</label>
+                  <input
+                    type="text"
+                    value={pageContent.period}
+                    onChange={(e) => updateField('period', e.target.value)}
+                    placeholder="2025년 1월 ~ 11월 (총 11개월)"
+                    className="w-full border border-gray-200 rounded px-3 py-2 text-sm text-gray-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">참여대상</label>
+                  <input
+                    type="text"
+                    value={pageContent.target}
+                    onChange={(e) => updateField('target', e.target.value)}
+                    placeholder="인천시 남동구 거주 만 65세 이상의 기초연금 수급자"
+                    className="w-full border border-gray-200 rounded px-3 py-2 text-sm text-gray-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">참여대상 비고 (선택)</label>
+                  <input
+                    type="text"
+                    value={pageContent.targetNote}
+                    onChange={(e) => updateField('targetNote', e.target.value)}
+                    placeholder="※ 일부 유형 만 60세 이상 참여 가능"
+                    className="w-full border border-gray-200 rounded px-3 py-2 text-sm text-gray-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">활동횟수 / 활동비</label>
+                  <input
+                    type="text"
+                    value={pageContent.activity}
+                    onChange={(e) => updateField('activity', e.target.value)}
+                    placeholder="월 최대 10회 (1회 3시간) / 최대 월 29만 원"
+                    className="w-full border border-gray-200 rounded px-3 py-2 text-sm text-gray-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">활동비 비고 (선택)</label>
+                  <input
+                    type="text"
+                    value={pageContent.activityNote}
+                    onChange={(e) => updateField('activityNote', e.target.value)}
+                    placeholder="※ 수요처 계약에 따라 달라질 수 있음"
+                    className="w-full border border-gray-200 rounded px-3 py-2 text-sm text-gray-900"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 bg-green-50 rounded-lg border border-green-100">
+              <h4 className="text-sm font-bold text-green-800 mb-1">신청 안내 영역 (선택)</h4>
+              <p className="text-xs text-gray-500 mb-3">비워두면 신청 안내 박스가 표시되지 않습니다.</p>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">구비서류</label>
+                  <input
+                    type="text"
+                    value={pageContent.documents}
+                    onChange={(e) => updateField('documents', e.target.value)}
+                    placeholder="주민등록등본 1통, 사진 2매, 신청서 1부, 개인정보동의서"
+                    className="w-full border border-gray-200 rounded px-3 py-2 text-sm text-gray-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">신청방법</label>
+                  <input
+                    type="text"
+                    value={pageContent.method}
+                    onChange={(e) => updateField('method', e.target.value)}
+                    placeholder="방문 접수 (개별 면담 진행)"
+                    className="w-full border border-gray-200 rounded px-3 py-2 text-sm text-gray-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">제외대상 (한 줄에 하나씩)</label>
+                  <textarea
+                    value={pageContent.exclusions}
+                    onChange={(e) => updateField('exclusions', e.target.value)}
+                    placeholder={"국민기초생활보장법에 의한 생계급여 수급권자\n타 정부부처 일자리 사업 참여자\n건강보험 직장가입자\n장기요양등급 판정자"}
+                    rows={4}
+                    className="w-full border border-gray-200 rounded px-3 py-2 text-sm text-gray-900 resize-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">하단 안내문구</label>
+                  <input
+                    type="text"
+                    value={pageContent.notice}
+                    onChange={(e) => updateField('notice', e.target.value)}
+                    placeholder="진행되는 사업은 2024년 확정 내시에 따라 달라질 수 있습니다."
+                    className="w-full border border-gray-200 rounded px-3 py-2 text-sm text-gray-900"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <button
+              onClick={handleSaveContent}
+              disabled={contentSaving}
+              className="px-6 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white rounded font-semibold text-sm"
+            >
+              {contentSaving ? '저장 중...' : '페이지 내용 저장'}
+            </button>
+          </div>
+        </section>
       </div>
     </div>
   )
