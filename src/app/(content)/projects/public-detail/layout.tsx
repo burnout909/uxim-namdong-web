@@ -1,12 +1,13 @@
-// app/(content)/projects/public-detail/layout.tsx
 'use client';
 
+import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Title from "@/components/Title";
 import ProjectTab from "@/components/ProjectTab";
 import { ROUTE } from "@/constants/route";
+import { createBrowserSupabaseClient } from "@/lib/supabase-browser";
 
-const tabList = [
+const FALLBACK_TABS = [
   { name: "경로당급식지원",         path: ROUTE.projects.publicDetail.seniorMeal },
   { name: "경로당시설안전관리요원", path: ROUTE.projects.publicDetail.facilitySafety },
   { name: "노인시설지킴이",         path: ROUTE.projects.publicDetail.elderGuard },
@@ -24,6 +25,29 @@ export default function PublicDetailLayout({ children }: { children: React.React
   const router = useRouter();
   const pathname = usePathname();
   const current = normalize(pathname);
+  const [tabList, setTabList] = useState(FALLBACK_TABS);
+
+  useEffect(() => {
+    async function fetchTabs() {
+      try {
+        const supabase = createBrowserSupabaseClient();
+        const { data } = await supabase
+          .from("BUSINESS_MENU")
+          .select("name, slug")
+          .eq("category", "public")
+          .eq("is_active", true)
+          .order("order_index", { ascending: true });
+
+        if (data && data.length > 0) {
+          setTabList(data.map((item: { name: string; slug: string }) => ({
+            name: item.name,
+            path: `/projects/public-detail/${item.slug}`,
+          })));
+        }
+      } catch { /* 폴백 유지 */ }
+    }
+    fetchTabs();
+  }, []);
 
   const activeTab =
     tabList.find(t => {

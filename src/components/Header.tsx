@@ -49,6 +49,7 @@ const HEADER_MENUS: Record<HeaderLabel, { defaultPath: string; subMenus: SubMenu
     subMenus: [
       { label: "사진자료", path: ROUTE.resources.photos },
       { label: "영상자료", path: ROUTE.resources.videos },
+      { label: "보도자료", path: ROUTE.resources.press },
       { label: "관련 사이트", path: ROUTE.resources.links },
     ],
   },
@@ -139,10 +140,12 @@ export default function Header() {
 
       {/* 데스크톱 헤더 (md 이상) */}
       <div className="hidden md:block">
-        <button className="ml-20 cursor-pointer py-5" onClick={() => router.push(ROUTE.home)}>
-          <Image src={LogoImage} width={224} height={48} alt="logo" />
-        </button>
-        <nav className="ml-5 h-[64px] border-t border-b border-[#D8D8D8] flex flex-row items-center px-[50px]">
+        <div className="max-w-[1440px] mx-auto flex items-center justify-between px-8 lg:px-16">
+          <button className="cursor-pointer py-4" onClick={() => router.push(ROUTE.home)}>
+            <Image src={LogoImage} width={224} height={48} alt="logo" />
+          </button>
+        </div>
+        <nav className="h-[56px] border-t border-b border-gray-200 flex flex-row items-center px-8 lg:px-16 max-w-[1440px] mx-auto">
           {HEADER_LABELS.map((label) => (
             <div
               key={label}
@@ -151,20 +154,20 @@ export default function Header() {
               onMouseLeave={() => setActiveMenu(null)}
             >
               <button
-                className="h-full flex gap-2 items-center cursor-pointer px-4 text-center text-lg text-slate-600 hover:bg-slate-100 active:bg-slate-100 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+                className="h-full flex gap-1.5 items-center cursor-pointer px-5 text-center text-[15px] font-medium text-gray-700 hover:text-[#246BEB] transition-colors"
                 onClick={() => router.push(HEADER_MENUS[label].defaultPath)}
               >
                 {label}
                 <svg
-                  width={20}
-                  height={20}
+                  width={14}
+                  height={14}
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth={2}
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className={`inline-block ml-1 text-gray-500 transition-transform duration-200 ${activeMenu === label ? 'rotate-180' : ''}`}
+                  className={`text-gray-400 transition-transform duration-200 ${activeMenu === label ? 'rotate-180' : ''}`}
                 >
                   <polyline points="6 9 12 15 18 9" />
                 </svg>
@@ -176,7 +179,7 @@ export default function Header() {
                   {HEADER_MENUS[label].subMenus.map((subItem) => (
                     <button
                       key={subItem.path}
-                      className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors first:rounded-t-lg last:rounded-b-lg"
+                      className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#246BEB] transition-colors first:rounded-t-lg last:rounded-b-lg"
                       onClick={() => {
                         router.push(subItem.path);
                         setActiveMenu(null);

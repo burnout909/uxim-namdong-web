@@ -1,33 +1,17 @@
-// app/(content)/projects/community/page.tsx
-'use client';
-
-import { useRouter } from "next/navigation";
 import Title from "@/components/Title";
-import ProjectTab from "@/components/ProjectTab";
 import { ROUTE } from "@/constants/route";
+import { getBusinessMenuItems } from "@/services/businessService";
+import DynamicProjectTab from "@/components/DynamicProjectTab";
 
-const tabList = [
-  {
-    name: "OK! 6070 아파트택배(구월)",
-    path: ROUTE.projects.communityDetail.ok6070Apartment1,
-  },
-  {
-    name: "OK! 6070 아파트택배(논현)",
-    path: ROUTE.projects.communityDetail.ok6070Apartment2,
-  },
-  {
-    name: "청소년건강지킴이",
-    path: ROUTE.projects.communityDetail.studentHealth,
-  },
+export const dynamic = "force-dynamic";
+
+const FALLBACK_TABS = [
+  { name: "OK! 6070 아파트택배(구월)", path: ROUTE.projects.communityDetail.ok6070Apartment1 },
+  { name: "OK! 6070 아파트택배(논현)", path: ROUTE.projects.communityDetail.ok6070Apartment2 },
+  { name: "청소년건강지킴이", path: ROUTE.projects.communityDetail.studentHealth },
   { name: "OK 6070 카드형", path: ROUTE.projects.communityDetail.ok6070Card },
-  {
-    name: "복지카페매니저(센터)",
-    path: ROUTE.projects.communityDetail.yettunCafe1,
-  },
-  {
-    name: "복지카페매니저(소래점)",
-    path: ROUTE.projects.communityDetail.yettunCafe2,
-  },
+  { name: "복지카페매니저(센터)", path: ROUTE.projects.communityDetail.yettunCafe1 },
+  { name: "복지카페매니저(소래점)", path: ROUTE.projects.communityDetail.yettunCafe2 },
   { name: "공동작업장-1", path: ROUTE.projects.communityDetail.sharingJob1 },
   { name: "공동작업장-2", path: ROUTE.projects.communityDetail.sharingJob2 },
   { name: "도시락배송지원", path: ROUTE.projects.communityDetail.jungdotab },
@@ -35,30 +19,25 @@ const tabList = [
   { name: "ESG환경지킴이", path: ROUTE.projects.communityDetail.ourESG },
 ];
 
-export default function CommunityMain() {
-  const router = useRouter();
+export default async function CommunityMain() {
+  const dbItems = await getBusinessMenuItems("community");
 
-  const handleTabClick = (tabName: string) => {
-    const target = tabList.find((tab) => tab.name === tabName);
-    if (target) {
-      router.push(target.path);
-    }
-  };
+  const tabList =
+    dbItems.length > 0
+      ? dbItems.map((item) => ({
+          name: item.name,
+          path: `/projects/community-detail/${item.slug}`,
+        }))
+      : FALLBACK_TABS;
 
   return (
     <div className="py-8 md:py-10 max-w-screen-lg mx-auto text-gray-800">
       <Title text="공동체사업단" />
 
-      {/* 탭 버튼 */}
       <div className="mt-6 md:mt-10">
-        <ProjectTab
-          tabs={tabList.map((t) => t.name)}
-          activeTab={""}
-          onTabClick={handleTabClick}
-        />
+        <DynamicProjectTab tabs={tabList} />
       </div>
 
-      {/* 사업 소개 */}
       <div className="mt-8 md:mt-14">
         <h2 className="text-blue-700 text-lg md:text-2xl font-bold mb-3 md:mb-4">
           시장형 사업이란?

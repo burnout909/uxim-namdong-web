@@ -1,52 +1,41 @@
-// app/projects/public-service/page.tsx
-'use client';
-
-import { useRouter } from "next/navigation";
 import Title from "@/components/Title";
-import ProjectTab from "@/components/ProjectTab";
 import { ROUTE } from "@/constants/route";
+import { getBusinessMenuItems } from "@/services/businessService";
+import DynamicProjectTab from "@/components/DynamicProjectTab";
 
-const tabList = [
+export const dynamic = "force-dynamic";
+
+// 기존 하드코딩 폴백 데이터
+const FALLBACK_TABS = [
   { name: "경로당급식지원", path: ROUTE.projects.publicDetail.seniorMeal },
-  {
-    name: "경로당시설안전관리요원",
-    path: ROUTE.projects.publicDetail.facilitySafety,
-  },
+  { name: "경로당시설안전관리요원", path: ROUTE.projects.publicDetail.facilitySafety },
   { name: "노인시설지킴이", path: ROUTE.projects.publicDetail.elderGuard },
   { name: "동네쉼터관리사", path: ROUTE.projects.publicDetail.shelterManager },
   { name: "스쿨존안전지킴이", path: ROUTE.projects.publicDetail.schoolZone },
-  {
-    name: "시니어폐의약품수거",
-    path: ROUTE.projects.publicDetail.drugCollector,
-  },
+  { name: "시니어폐의약품수거", path: ROUTE.projects.publicDetail.drugCollector },
   { name: "우리동네안전지킴이", path: ROUTE.projects.publicDetail.localGuard },
   { name: "은빛정원선생님", path: ROUTE.projects.publicDetail.gardenTeacher },
 ];
 
-export default function PublicService() {
-  const router = useRouter();
+export default async function PublicService() {
+  const dbItems = await getBusinessMenuItems("public");
 
-  const handleTabClick = (tabName: string) => {
-    const target = tabList.find((tab) => tab.name === tabName);
-    if (target) {
-      router.push(target.path);
-    }
-  };
+  const tabList =
+    dbItems.length > 0
+      ? dbItems.map((item) => ({
+          name: item.name,
+          path: `/projects/public-detail/${item.slug}`,
+        }))
+      : FALLBACK_TABS;
 
   return (
     <div className="py-8 md:py-10 max-w-screen-lg mx-auto text-gray-800">
       <Title text="노인공익활동사업" />
 
-      {/* 탭 버튼 */}
       <div className="mt-6 md:mt-10">
-        <ProjectTab
-          tabs={tabList.map((t) => t.name)}
-          activeTab={""}
-          onTabClick={handleTabClick}
-        />
+        <DynamicProjectTab tabs={tabList} />
       </div>
 
-      {/* 공익활동 소개 */}
       <div className="mt-8 md:mt-14">
         <h2 className="text-blue-700 text-lg md:text-2xl font-bold mb-3 md:mb-4">
           공익활동사업이란?
@@ -72,10 +61,8 @@ export default function PublicService() {
         </div>
       </div>
 
-      {/* 구분선 */}
       <div className="border-t border-gray-300 my-6 md:my-10" />
 
-      {/* 신청 안내 */}
       <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 md:p-6 shadow-sm">
         <h2 className="text-base md:text-xl font-bold text-blue-800 mb-3 md:mb-4">
           신청 안내

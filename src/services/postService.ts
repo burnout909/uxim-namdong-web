@@ -10,6 +10,7 @@ export enum PostType {
     FREE = 'FREE',
     PHOTO = 'PHOTO',
     VIDEO = 'VIDEO',
+    PRESS = 'PRESS',
 }
 
 export type Post = {

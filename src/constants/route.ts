@@ -64,6 +64,7 @@ export const ROUTE = {
   resources: {
     photos: "/resources/photos",
     videos: "/resources/videos",
+    press: "/resources/press",
     links: "/resources/links",
   },
 
