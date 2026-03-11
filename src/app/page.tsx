@@ -115,23 +115,23 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* 공지사항 + 일자리 소식 - 퀵링크와 같은 넓은 폭 */}
-      <section className="w-full max-w-6xl mx-auto py-14 grid md:grid-cols-2 gap-6 px-4">
+      {/* 공지사항 + 일자리 소식 */}
+      <section className="w-full max-w-6xl mx-auto py-8 md:py-14 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 px-4">
         {/* 공지사항 */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-5 pb-3 border-b-2 border-[#6B917A]">
-            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-              <span className="w-1.5 h-5 bg-[#6B917A] rounded-sm"></span>
+        <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6">
+          <div className="flex items-center justify-between mb-3 md:mb-5 pb-2 md:pb-3 border-b-2 border-[#6B917A]">
+            <h2 className="text-base md:text-lg font-bold text-gray-900 flex items-center gap-2">
+              <span className="w-1.5 h-4 md:h-5 bg-[#6B917A] rounded-sm"></span>
               공지사항
             </h2>
             <Link
               href={ROUTE.notice.announcement}
-              className="text-sm text-gray-400 hover:text-[#6B917A] transition-colors flex items-center gap-1"
+              className="text-xs md:text-sm text-gray-400 hover:text-[#6B917A] transition-colors flex items-center gap-1"
             >
-              더보기 <FaArrowRight className="text-xs" />
+              더보기 <FaArrowRight className="text-[10px] md:text-xs" />
             </Link>
           </div>
-          <ul className="text-sm">
+          <ul className="text-xs md:text-sm">
             {notices.length === 0
               ? Array.from({ length: 5 }).map((_, i) => (
                   <NoticeItem
@@ -156,20 +156,20 @@ export default async function Home() {
         </div>
 
         {/* 일자리 소식 */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-5 pb-3 border-b-2 border-[#8AAD72]">
-            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-              <span className="w-1.5 h-5 bg-[#8AAD72] rounded-sm"></span>
+        <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6">
+          <div className="flex items-center justify-between mb-3 md:mb-5 pb-2 md:pb-3 border-b-2 border-[#8AAD72]">
+            <h2 className="text-base md:text-lg font-bold text-gray-900 flex items-center gap-2">
+              <span className="w-1.5 h-4 md:h-5 bg-[#8AAD72] rounded-sm"></span>
               일자리 소식
             </h2>
             <Link
               href={ROUTE.notice.jobInfo}
-              className="text-sm text-gray-400 hover:text-[#8AAD72] transition-colors flex items-center gap-1"
+              className="text-xs md:text-sm text-gray-400 hover:text-[#8AAD72] transition-colors flex items-center gap-1"
             >
-              더보기 <FaArrowRight className="text-xs" />
+              더보기 <FaArrowRight className="text-[10px] md:text-xs" />
             </Link>
           </div>
-          <ul className="text-sm">
+          <ul className="text-xs md:text-sm">
             {jobs.length === 0
               ? Array.from({ length: 5 }).map((_, i) => (
                   <NoticeItem
@@ -195,9 +195,9 @@ export default async function Home() {
       </section>
 
       {/* 일자리 참여방법 */}
-      <section className="bg-white py-16 md:py-20 border-t border-gray-100">
+      <section className="bg-white py-10 md:py-20 border-t border-gray-100">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center mb-12">
+          <div className="text-center mb-8 md:mb-12">
             <p className="text-[#6B917A] text-sm font-semibold mb-2">HOW TO PARTICIPATE</p>
             <h2 className="text-xl md:text-2xl font-bold text-gray-900">
               일자리 참여방법

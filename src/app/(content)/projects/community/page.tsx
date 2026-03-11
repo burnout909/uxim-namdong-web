@@ -49,6 +49,15 @@ async function getPageContent() {
   return DEFAULTS;
 }
 
+function InfoField({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-gray-50 rounded-lg px-4 py-3 md:px-5 md:py-4">
+      <p className="text-xs md:text-sm font-semibold text-gray-500 mb-1">{label}</p>
+      <div className="text-sm md:text-[16px] text-gray-900 leading-relaxed">{children}</div>
+    </div>
+  );
+}
+
 export default async function CommunityMain() {
   const dbItems = await getBusinessMenuItems("community");
   const c = await getPageContent();
@@ -71,75 +80,50 @@ export default async function CommunityMain() {
         <DynamicProjectTab tabs={tabList} />
       </div>
 
-      <div className="mt-8 md:mt-14">
-        <h2 className="text-blue-700 text-lg md:text-2xl font-bold mb-3 md:mb-4">
+      <div className="mt-8 md:mt-14 bg-white border border-gray-200 rounded-xl p-5 md:p-8">
+        <h2 className="text-blue-700 text-lg md:text-2xl font-bold mb-5 md:mb-6">
           {c.sectionTitle}
         </h2>
-        <div className="space-y-2 md:space-y-3 text-sm md:text-[17px] leading-relaxed">
-          <p>
-            <strong className="font-semibold">사업의 정의</strong>: {c.definition}
-          </p>
-          <p>
-            <strong className="font-semibold">사업기간</strong>: {c.period}
-          </p>
-          <p>
-            <strong className="font-semibold">사업대상</strong>: {c.target}
+        <div className="space-y-3 md:space-y-4">
+          <InfoField label="사업의 정의">{c.definition}</InfoField>
+          <InfoField label="사업기간">{c.period}</InfoField>
+          <InfoField label="사업대상">
+            {c.target}
             {c.targetNote && (
-              <>
-                <br />
-                <span className="text-xs md:text-sm text-gray-600 ml-2">
-                  ※ {c.targetNote}
-                </span>
-              </>
+              <span className="block text-xs md:text-sm text-gray-500 mt-1">※ {c.targetNote}</span>
             )}
-          </p>
-          <p>
-            <strong className="font-semibold">활동시간 / 활동비</strong>: {c.activity}
+          </InfoField>
+          <InfoField label="활동시간 / 활동비">
+            {c.activity}
             {c.activityNote && (
-              <>
-                <br />
-                <span className="text-xs md:text-sm text-gray-600 ml-2">
-                  ※ {c.activityNote}
-                </span>
-              </>
+              <span className="block text-xs md:text-sm text-gray-500 mt-1">※ {c.activityNote}</span>
             )}
-          </p>
+          </InfoField>
         </div>
       </div>
 
       {hasApplicationInfo && (
-        <>
-          <div className="border-t border-gray-300 my-6 md:my-10" />
-
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 md:p-6 shadow-sm">
-            <h2 className="text-base md:text-xl font-bold text-blue-800 mb-3 md:mb-4">
-              신청 안내
-            </h2>
-            <ul className="space-y-2 text-sm md:text-[16px] leading-relaxed">
-              {c.documents && (
-                <li>● <strong>구비서류</strong>: {c.documents}</li>
-              )}
-              {c.method && (
-                <li>● <strong>신청방법</strong>: {c.method}</li>
-              )}
-              {c.exclusions && (
-                <li>
-                  ● <strong>제외대상</strong>:
-                  <ul className="ml-4 list-disc list-inside mt-1">
-                    {c.exclusions.split("\n").filter(Boolean).map((item: string, i: number) => (
-                      <li key={i}>{item}</li>
-                    ))}
-                  </ul>
-                </li>
-              )}
-            </ul>
-            {c.notice && (
-              <p className="text-xs md:text-[14px] mt-3 md:mt-4 text-blue-600">
-                ※ {c.notice}
-              </p>
+        <div className="mt-4 md:mt-6 bg-blue-50 border border-blue-200 rounded-xl p-5 md:p-8">
+          <h2 className="text-base md:text-xl font-bold text-blue-800 mb-5 md:mb-6">
+            신청 안내
+          </h2>
+          <div className="space-y-3 md:space-y-4">
+            {c.documents && <InfoField label="구비서류">{c.documents}</InfoField>}
+            {c.method && <InfoField label="신청방법">{c.method}</InfoField>}
+            {c.exclusions && (
+              <InfoField label="제외대상">
+                <ul className="list-disc list-inside space-y-0.5">
+                  {c.exclusions.split("\n").filter(Boolean).map((item: string, i: number) => (
+                    <li key={i}>{item}</li>
+                  ))}
+                </ul>
+              </InfoField>
             )}
           </div>
-        </>
+          {c.notice && (
+            <p className="text-xs md:text-sm mt-4 md:mt-5 text-blue-600">※ {c.notice}</p>
+          )}
+        </div>
       )}
     </div>
   );

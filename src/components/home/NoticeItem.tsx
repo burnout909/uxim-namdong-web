@@ -5,11 +5,11 @@ interface NoticeItemProps {
 
 export default function NoticeItem({ title, date }: NoticeItemProps) {
   return (
-    <li className="flex justify-between items-center py-3 border-b border-gray-100 last:border-b-0 group">
-      <span className="text-gray-700 group-hover:text-blue-600 transition-colors truncate pr-4 flex-1">
+    <li className="flex justify-between items-center py-2.5 md:py-3 border-b border-gray-100 last:border-b-0 group">
+      <span className="text-gray-700 group-hover:text-blue-600 transition-colors truncate pr-3 md:pr-4 flex-1 min-w-0">
         {title}
       </span>
-      <span className="text-gray-400 text-xs whitespace-nowrap">{date}</span>
+      <span className="text-gray-400 text-[10px] md:text-xs whitespace-nowrap shrink-0">{date}</span>
     </li>
   );
 }
