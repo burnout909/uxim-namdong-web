@@ -12,6 +12,10 @@ const resourceItems = [
         path: ROUTE.resources.videos,
     },
     {
+        label: "보도자료",
+        path: ROUTE.resources.press,
+    },
+    {
         label: "관련사이트",
         path: ROUTE.resources.links
     }

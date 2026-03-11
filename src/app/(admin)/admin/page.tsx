@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { FaNewspaper, FaImage, FaWindowMaximize, FaComments } from 'react-icons/fa';
+import { FaNewspaper, FaImage, FaWindowMaximize, FaComments, FaSitemap, FaBriefcase } from 'react-icons/fa';
 
 export default function AdminHomePage() {
   const menus = [
@@ -29,13 +29,29 @@ export default function AdminHomePage() {
       color: 'from-green-500 to-green-600',
       hoverColor: 'hover:from-green-600 hover:to-green-700'
     },
-    { 
-      name: '자유게시판 관리', 
+    {
+      name: '자유게시판 관리',
       href: '/admin/freeboard',
       icon: <FaComments className="w-12 h-12" />,
       description: '회원들이 작성한 자유게시판 글을 관리합니다',
       color: 'from-orange-500 to-orange-600',
       hoverColor: 'hover:from-orange-600 hover:to-orange-700'
+    },
+    {
+      name: '조직도 관리',
+      href: '/admin/organization',
+      icon: <FaSitemap className="w-12 h-12" />,
+      description: '조직도 이미지와 인원 구성표를 관리합니다',
+      color: 'from-teal-500 to-teal-600',
+      hoverColor: 'hover:from-teal-600 hover:to-teal-700'
+    },
+    {
+      name: '사업 관리',
+      href: '/admin/business',
+      icon: <FaBriefcase className="w-12 h-12" />,
+      description: '사업 메뉴 항목을 추가/수정/삭제합니다',
+      color: 'from-indigo-500 to-indigo-600',
+      hoverColor: 'hover:from-indigo-600 hover:to-indigo-700'
     },
   ];
 

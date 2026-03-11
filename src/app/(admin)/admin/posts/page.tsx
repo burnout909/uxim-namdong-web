@@ -17,7 +17,8 @@ const CategoryTypeEnumMap = {
     'JOB': '일자리 소식',
     'PRODUCT': '생산품',
     'PHOTO': '사진자료실',
-    'VIDEO': '동영상자료실'
+    'VIDEO': '동영상자료실',
+    'PRESS': '보도자료'
 } as const;
 
 type PostSummary = {
@@ -73,8 +74,21 @@ export default function AdminPostPage() {
             .range(from, to);
 
         if (error) {
-            console.error("게시글 목록을 불러오지 못했습니다.", error);
-            alert("게시글 목록을 불러오지 못했습니다.");
+            console.error("게시글 목록을 불러오지 못했습니다.", JSON.stringify(error));
+            // is_admin 컬럼이 없을 수 있으므로 필터 없이 재시도
+            const retry = await supabase
+                .from("POST")
+                .select("id, title, contents, created_at, type", { count: "exact" })
+                .eq("type", type)
+                .order("created_at", { ascending: false })
+                .range(from, to);
+            if (retry.error) {
+                alert("게시글 목록을 불러오지 못했습니다.");
+                setListLoading(false);
+                return;
+            }
+            setPostList((retry.data ?? []) as PostSummary[]);
+            setTotal(retry.count ?? 0);
             setListLoading(false);
             return;
         }

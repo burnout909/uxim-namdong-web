@@ -1,12 +1,11 @@
-// app/(content)/projects/capacity/page.tsx
-'use client';
-
-import { useRouter } from "next/navigation";
 import Title from "@/components/Title";
-import ProjectTab from "@/components/ProjectTab";
 import { ROUTE } from "@/constants/route";
+import { getBusinessMenuItems } from "@/services/businessService";
+import DynamicProjectTab from "@/components/DynamicProjectTab";
 
-const tabList = [
+export const dynamic = "force-dynamic";
+
+const FALLBACK_TABS = [
   { name: "시니어행정도우미", path: ROUTE.projects.capacityDetail.seniorAdmin },
   { name: "소비자감시단", path: ROUTE.projects.capacityDetail.consumerMonitor },
   { name: "북딜리버리", path: ROUTE.projects.capacityDetail.bookDelivery },
@@ -16,30 +15,25 @@ const tabList = [
   { name: "교통안전조사원", path: ROUTE.projects.capacityDetail.trafficSurveyor },
 ];
 
-export default function CapacityMain() {
-  const router = useRouter();
+export default async function CapacityMain() {
+  const dbItems = await getBusinessMenuItems("capacity");
 
-  const handleTabClick = (tabName: string) => {
-    const target = tabList.find((tab) => tab.name === tabName);
-    if (target) {
-      router.push(target.path);
-    }
-  };
+  const tabList =
+    dbItems.length > 0
+      ? dbItems.map((item) => ({
+          name: item.name,
+          path: `/projects/capacity-detail/${item.slug}`,
+        }))
+      : FALLBACK_TABS;
 
   return (
     <div className="py-8 md:py-10 max-w-screen-lg mx-auto text-gray-800">
       <Title text="노인역량활용사업" />
 
-      {/* 탭 버튼 */}
       <div className="mt-6 md:mt-10">
-        <ProjectTab
-          tabs={tabList.map((t) => t.name)}
-          activeTab={""}
-          onTabClick={handleTabClick}
-        />
+        <DynamicProjectTab tabs={tabList} />
       </div>
 
-      {/* 사업 소개 */}
       <div className="mt-8 md:mt-14">
         <h2 className="text-blue-700 text-lg md:text-2xl font-bold mb-3 md:mb-4">
           사회서비스형 사업이란?
