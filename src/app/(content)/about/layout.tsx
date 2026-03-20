@@ -3,11 +3,12 @@ import { ROUTE } from "@/constants/route";
 
 const aboutItems = [
     { label: "인사말", path: ROUTE.about.greeting },
-    { label: "시니어클럽소개", path: ROUTE.about.introduction },
-    { label: "미션과 비전", path: ROUTE.about.mission },
-    { label: "기관연혁", path: ROUTE.about.history },
-    { label: "법인 소개", path: ROUTE.about.legal },
-    { label: "기관 조직도", path: ROUTE.about.org },
+    { label: "센터소개", path: ROUTE.about.introduction },
+    { label: "안전보건경영방침", path: ROUTE.about.safety },
+    { label: "미션", path: ROUTE.about.mission },
+    { label: "연혁", path: ROUTE.about.history },
+    { label: "법인소개", path: ROUTE.about.legal },
+    { label: "조직도", path: ROUTE.about.org },
     { label: "오시는 길", path: ROUTE.about.location },
 ];
 

@@ -8,7 +8,7 @@ const projectItems = [
     path: ROUTE.projects.publicService,
   },
   {
-    label: "노인역량활용사업",
+    label: "노인역량활동사업",
     path: ROUTE.projects.capacity,
   },
   {

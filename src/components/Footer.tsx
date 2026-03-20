@@ -49,6 +49,9 @@ export default function Footer() {
             <p className="text-sm text-gray-900 font-semibold">
               {FooterText.telLabel}
             </p>
+            <p className="text-sm text-gray-700">
+              {FooterText.email}
+            </p>
           </div>
 
           {/* 오른쪽: 빈 공간 or 나중에 링크 등 추가 가능 */}
@@ -57,7 +60,12 @@ export default function Footer() {
 
         {/* Copyright 영역 */}
         <div className="mt-8 border-t border-gray-300 pt-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <span className="text-sm text-gray-500">{FooterText.copyright}</span>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-gray-500">{FooterText.copyright}</span>
+            <Link href="/about/privacy" className="text-sm text-gray-500 hover:text-gray-800 underline transition-colors">
+              개인정보처리방침
+            </Link>
+          </div>
           <div className="flex flex-wrap items-center gap-4">
             {PARTNER_ORGANIZATIONS.map((partner) => (
               <Link

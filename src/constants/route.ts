@@ -9,6 +9,8 @@ export const ROUTE = {
     legal: "/about/legal",
     org: "/about/org",
     location: "/about/location",
+    safety: "/about/safety",
+    privacy: "/about/privacy",
   },
 
   projects: {

@@ -4,8 +4,9 @@ import { ROUTE } from "@/constants/route";
 const aboutItems = [
     { label: "공지사항", path: ROUTE.notice.announcement },
     { label: "일자리소식", path: ROUTE.notice.jobInfo },
-    { label: "생산품", path: ROUTE.notice.products },
+    { label: "생산품 소개", path: ROUTE.notice.products },
     { label: "자유게시판", path: ROUTE.notice.free },
+    { label: "직원공간", path: ROUTE.notice.staff },
 ];
 
 export default function AboutLayout({ children }: Readonly<{ children: React.ReactNode }>) {

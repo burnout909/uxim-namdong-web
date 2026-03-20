@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { FaNewspaper, FaImage, FaWindowMaximize, FaComments, FaSitemap, FaBriefcase } from 'react-icons/fa';
+import { FaNewspaper, FaImage, FaWindowMaximize, FaComments, FaSitemap, FaBriefcase, FaShieldAlt } from 'react-icons/fa';
 
 export default function AdminHomePage() {
   const menus = [
@@ -52,6 +52,14 @@ export default function AdminHomePage() {
       description: '사업 메뉴 항목을 추가/수정/삭제합니다',
       color: 'from-indigo-500 to-indigo-600',
       hoverColor: 'hover:from-indigo-600 hover:to-indigo-700'
+    },
+    {
+      name: '안전보건경영방침',
+      href: '/admin/safety',
+      icon: <FaShieldAlt className="w-12 h-12" />,
+      description: '안전보건경영방침 이미지를 관리합니다',
+      color: 'from-emerald-500 to-emerald-600',
+      hoverColor: 'hover:from-emerald-600 hover:to-emerald-700'
     },
   ];
 

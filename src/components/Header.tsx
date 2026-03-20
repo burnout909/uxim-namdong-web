@@ -18,6 +18,7 @@ const HEADER_MENUS: Record<HeaderLabel, { defaultPath: string; subMenus: SubMenu
     subMenus: [
       { label: "인사말", path: ROUTE.about.greeting },
       { label: "센터소개", path: ROUTE.about.introduction },
+      { label: "안전보건경영방침", path: ROUTE.about.safety },
       { label: "미션", path: ROUTE.about.mission },
       { label: "연혁", path: ROUTE.about.history },
       { label: "법인소개", path: ROUTE.about.legal },
@@ -38,7 +39,7 @@ const HEADER_MENUS: Record<HeaderLabel, { defaultPath: string; subMenus: SubMenu
     defaultPath: ROUTE.notice.announcement,
     subMenus: [
       { label: "공지사항", path: ROUTE.notice.announcement },
-      { label: "채용정보", path: ROUTE.notice.jobInfo },
+      { label: "일자리소식", path: ROUTE.notice.jobInfo },
       { label: "생산품 소개", path: ROUTE.notice.products },
       { label: "자유게시판", path: ROUTE.notice.free },
       { label: "직원공간", path: ROUTE.notice.staff },
@@ -47,8 +48,8 @@ const HEADER_MENUS: Record<HeaderLabel, { defaultPath: string; subMenus: SubMenu
   자료실: {
     defaultPath: ROUTE.resources.photos,
     subMenus: [
-      { label: "사진자료", path: ROUTE.resources.photos },
-      { label: "영상자료", path: ROUTE.resources.videos },
+      { label: "사진자료실", path: ROUTE.resources.photos },
+      { label: "영상자료실", path: ROUTE.resources.videos },
       { label: "보도자료", path: ROUTE.resources.press },
       { label: "관련 사이트", path: ROUTE.resources.links },
     ],

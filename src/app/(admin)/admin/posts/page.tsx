@@ -18,7 +18,8 @@ const CategoryTypeEnumMap = {
     'PRODUCT': '생산품',
     'PHOTO': '사진자료실',
     'VIDEO': '동영상자료실',
-    'PRESS': '보도자료'
+    'PRESS': '보도자료',
+    'STAFF': '직원공간'
 } as const;
 
 type PostSummary = {

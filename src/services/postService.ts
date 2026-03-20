@@ -11,6 +11,7 @@ export enum PostType {
     PHOTO = 'PHOTO',
     VIDEO = 'VIDEO',
     PRESS = 'PRESS',
+    STAFF = 'STAFF',
 }
 
 export type Post = {

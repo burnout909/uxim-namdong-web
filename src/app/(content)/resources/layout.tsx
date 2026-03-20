@@ -16,7 +16,7 @@ const resourceItems = [
         path: ROUTE.resources.press,
     },
     {
-        label: "관련사이트",
+        label: "관련 사이트",
         path: ROUTE.resources.links
     }
 ];
