@@ -4,7 +4,6 @@ import { useMemo, useState, useEffect, useCallback } from "react";
 import 'react-quill-new/dist/quill.snow.css';
 import dynamic from "next/dynamic";
 import { createBrowserClient } from '@supabase/ssr';
-import { generateUploadUrl } from "@/app/service/s3";
 import { v4 as uuidv4 } from "uuid";
 import PostForm from "@/components/posting/PostForm";
 
@@ -110,7 +109,9 @@ export default function PostPage() {
                         const fileName = f.name.replace(/\.[^/.]+$/, "");
                         const key = `uploads/${uuidv4()}-${fileName}.${ext}`;
                         setFileKeyList((prev) => [...prev || [], key]);
-                        const uploadUrl = await generateUploadUrl(bucket, key);
+                        const presignRes = await fetch(`/api/s3/upload?bucket=${encodeURIComponent(bucket)}&key=${encodeURIComponent(key)}`);
+                        if (!presignRes.ok) throw new Error(`presigned URL 생성 실패: ${f.name}`);
+                        const { url: uploadUrl } = await presignRes.json();
                         const res = await fetch(uploadUrl, {
                             method: "PUT",
                             headers: { "Content-Type": f.type || "application/octet-stream" },

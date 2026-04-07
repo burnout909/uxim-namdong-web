@@ -3,7 +3,6 @@ import { useMemo, useState, useEffect, useCallback, type ChangeEvent } from "rea
 import 'react-quill-new/dist/quill.snow.css';
 import dynamic from "next/dynamic";
 import { createBrowserSupabaseClient } from '@/lib/supabase-browser';
-import { generateUploadUrl } from "@/app/service/s3";
 import { v4 as uuidv4 } from "uuid";
 import { formatMetaDate } from "@/utils/post";
 import { useAuth } from "@/hooks/useAuth";
@@ -146,6 +145,7 @@ export default function AdminPostPage() {
             alert("파일 업로드를 위해 로그인이 필요합니다");
             return;
         }
+        const input = e.currentTarget;
         const list = e.target.files;
         if (!list) return;
 
@@ -174,7 +174,9 @@ export default function AdminPostPage() {
                         const fileName = f.name.replace(/\.[^/.]+$/, "");
                         const key = `uploads/${uuidv4()}-${fileName}.${ext}`;
                         // presigned URL 생성
-                        const uploadUrl = await generateUploadUrl(bucket, key);
+                        const presignRes = await fetch(`/api/s3/upload?bucket=${encodeURIComponent(bucket)}&key=${encodeURIComponent(key)}`);
+                        if (!presignRes.ok) throw new Error(`presigned URL 생성 실패: ${f.name}`);
+                        const { url: uploadUrl } = await presignRes.json();
 
                         // 실제 업로드
                         const res = await fetch(uploadUrl, {
@@ -211,7 +213,7 @@ export default function AdminPostPage() {
             setFiles(prev => prev.filter(f => !next.includes(f)));
         } finally {
             setUploading(false);
-            e.currentTarget.value = "";
+            input.value = "";
         }
     }, [userId]);
 
@@ -236,7 +238,14 @@ export default function AdminPostPage() {
         setListLoading(true);
         const { data, error } = await supabase
             .from("POST")
-            .select("id, title, contents, type")
+            .select(`
+                id, title, contents, type,
+                POST_FILE (
+                    file_key,
+                    role,
+                    FILE!inner ( file_key, mime_type, size_bytes )
+                )
+            `)
             .eq("id", postId)
             .eq("is_admin", true)
             .maybeSingle();
@@ -252,6 +261,21 @@ export default function AdminPostPage() {
         setTitle(data.title ?? "");
         setContents(data.contents ?? "");
         setType((data.type ?? "NOTICE") as keyof typeof CategoryTypeEnumMap);
+
+        // 기존 첨부파일 복원
+        const postFiles = (data as any).POST_FILE ?? [];
+        const existingFiles: LocalFile[] = postFiles.map((pf: any) => ({
+            file: new File([], pf.FILE.file_key.split('/').pop() ?? 'file', {
+                type: pf.FILE.mime_type ?? 'application/octet-stream',
+            }),
+            previewUrl: pf.FILE.mime_type?.startsWith('image/')
+                ? `https://${process.env.NEXT_PUBLIC_S3_BUCKET_NAME}.s3.amazonaws.com/${pf.FILE.file_key}`
+                : undefined,
+        }));
+        const existingKeys: string[] = postFiles.map((pf: any) => pf.file_key);
+
+        setFiles(existingFiles);
+        setFileKeyList(existingKeys);
         setViewMode('edit');
     };
 

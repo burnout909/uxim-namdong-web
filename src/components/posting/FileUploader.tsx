@@ -1,5 +1,4 @@
 'use client';
-import { generateUploadUrl } from "@/app/service/s3";
 import { createBrowserClient } from "@supabase/ssr";
 import { v4 as uuidv4 } from "uuid";
 
@@ -31,7 +30,9 @@ export default function FileUploader({ userId, files, setFiles, uploading, setUp
           const fileName = f.name.replace(/\.[^/.]+$/, "");
           const key = `uploads/${uuidv4()}-${fileName}.${ext}`;
           setFileKeyList((prev: any) => [...prev, key]);
-          const uploadUrl = await generateUploadUrl(bucket, key);
+          const presignRes = await fetch(`/api/s3/upload?bucket=${encodeURIComponent(bucket)}&key=${encodeURIComponent(key)}`);
+          if (!presignRes.ok) throw new Error(`presigned URL 생성 실패: ${f.name}`);
+          const { url: uploadUrl } = await presignRes.json();
           await fetch(uploadUrl, { method: "PUT", headers: { "Content-Type": f.type }, body: f });
           await supabase.from("FILE").insert([{ file_key: key, bucket, size_bytes: f.size, mime_type: f.type, user_id: userId }]);
         })
