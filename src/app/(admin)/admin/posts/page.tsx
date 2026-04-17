@@ -38,6 +38,8 @@ const ReactQuill = dynamic(() => import('react-quill-new'), {
 type LocalFile = {
     file: File;
     previewUrl?: string;   // 이미지 미리보기용 (이미지일 때만)
+    key?: string;          // 업로드 완료된 S3 key
+    pending?: boolean;     // 업로드 진행 중 여부
 };
 
 export default function AdminPostPage() {
@@ -58,7 +60,6 @@ export default function AdminPostPage() {
     // 업로드 상태
     const [files, setFiles] = useState<LocalFile[]>([]);
     const [uploading, setUploading] = useState(false);
-    const [fileKeyList, setFileKeyList] = useState<string[]>([]);
 
     // 카테고리별 관리자 게시글 목록 로드
     const fetchPostList = useCallback(async (targetPage: number) => {
@@ -149,68 +150,75 @@ export default function AdminPostPage() {
         const list = e.target.files;
         if (!list) return;
 
-        // UI 미리 추가
-        const next: LocalFile[] = [];
-        for (const f of Array.from(list)) {
-            if (f.type.startsWith("video/")) continue;
-            const isImage = f.type.startsWith("image/");
-            next.push({
-                file: f,
-                previewUrl: isImage ? URL.createObjectURL(f) : undefined,
+        const bucket = process.env.NEXT_PUBLIC_S3_BUCKET_NAME!;
+
+        // 영상 제외, 파일별로 S3 key 미리 발급해 LocalFile과 1:1로 묶기
+        const items = Array.from(list)
+            .filter(f => !f.type.startsWith("video/"))
+            .map(f => {
+                const ext = f.name.split('.').pop();
+                const fileName = f.name.replace(/\.[^/.]+$/, "");
+                const key = `uploads/${uuidv4()}-${fileName}.${ext}`;
+                return {
+                    file: f,
+                    key,
+                    previewUrl: f.type.startsWith("image/") ? URL.createObjectURL(f) : undefined,
+                };
             });
+
+        if (!items.length) {
+            input.value = "";
+            return;
         }
 
-        setFiles(prev => [...prev, ...next]);
+        // UI 즉시 반영 (pending 상태)
+        setFiles(prev => [
+            ...prev,
+            ...items.map(i => ({
+                file: i.file,
+                previewUrl: i.previewUrl,
+                key: i.key,
+                pending: true,
+            })),
+        ]);
         setUploading(true);
 
         try {
-            const bucket = process.env.NEXT_PUBLIC_S3_BUCKET_NAME!;
-            const uploadedKeys: string[] = [];
-            await Promise.all(
-                Array.from(list)
-                    .filter(f => !f.type.startsWith("video/")) // 영상 제외
-                    .map(async (f) => {
-                        const ext = f.name.split('.').pop();
-                        const fileName = f.name.replace(/\.[^/.]+$/, "");
-                        const key = `uploads/${uuidv4()}-${fileName}.${ext}`;
-                        // presigned URL 생성
-                        const presignRes = await fetch(`/api/s3/upload?bucket=${encodeURIComponent(bucket)}&key=${encodeURIComponent(key)}`);
-                        if (!presignRes.ok) throw new Error(`presigned URL 생성 실패: ${f.name}`);
-                        const { url: uploadUrl } = await presignRes.json();
+            await Promise.all(items.map(async ({ file, key }) => {
+                // presigned URL 생성
+                const presignRes = await fetch(`/api/s3/upload?bucket=${encodeURIComponent(bucket)}&key=${encodeURIComponent(key)}`);
+                if (!presignRes.ok) throw new Error(`presigned URL 생성 실패: ${file.name}`);
+                const { url: uploadUrl } = await presignRes.json();
 
-                        // 실제 업로드
-                        const res = await fetch(uploadUrl, {
-                            method: "PUT",
-                            headers: {
-                                "Content-Type": f.type || "application/octet-stream",
-                            },
-                            body: f,
-                        });
+                // 실제 업로드
+                const res = await fetch(uploadUrl, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": file.type || "application/octet-stream",
+                    },
+                    body: file,
+                });
+                if (!res.ok) throw new Error(`❌ 업로드 실패: ${file.name}`);
 
-                        //db에도 파일 관련 정보 저장
-                        const { error } = await supabase
-                            .from('FILE')
-                            .insert([
-                                { file_key: key, bucket: bucket, size_bytes: f.size, mime_type: f.type, user_id: userId }
-                            ]);
+                //db에도 파일 관련 정보 저장
+                const { error } = await supabase
+                    .from('FILE')
+                    .insert([
+                        { file_key: key, bucket: bucket, size_bytes: file.size, mime_type: file.type, user_id: userId }
+                    ]);
+                if (error) throw error;
+            }));
 
-                        if (!res.ok) throw new Error(`❌ 업로드 실패: ${f.name}`);
-                        if (error) throw error;
-
-                        uploadedKeys.push(key);
-                        return `https://${bucket}.s3.amazonaws.com/${key}`;
-                    })
-            );
-
-            if (uploadedKeys.length) {
-                setFileKeyList((prev) => [...prev, ...uploadedKeys]);
-            }
+            // 업로드 완료 — pending 해제
+            const uploadedKeys = new Set(items.map(i => i.key));
+            setFiles(prev => prev.map(f => (f.key && uploadedKeys.has(f.key) ? { ...f, pending: false } : f)));
         } catch (err) {
             console.error("업로드 중 오류:", err);
             alert("파일 업로드 중 오류가 발생했습니다.");
 
-            // 롤백: 새로 추가된 파일 제거
-            setFiles(prev => prev.filter(f => !next.includes(f)));
+            // 롤백: 이번 업로드에 추가했던 파일 제거
+            const failedKeys = new Set(items.map(i => i.key));
+            setFiles(prev => prev.filter(f => !(f.key && failedKeys.has(f.key))));
         } finally {
             setUploading(false);
             input.value = "";
@@ -230,7 +238,6 @@ export default function AdminPostPage() {
         setTitle("");
         setContents("");
         setFiles([]);
-        setFileKeyList([]);
         setEditingPostId(null);
     };
 
@@ -271,11 +278,10 @@ export default function AdminPostPage() {
             previewUrl: pf.FILE.mime_type?.startsWith('image/')
                 ? `https://${process.env.NEXT_PUBLIC_S3_BUCKET_NAME}.s3.amazonaws.com/${pf.FILE.file_key}`
                 : undefined,
+            key: pf.file_key,
         }));
-        const existingKeys: string[] = postFiles.map((pf: any) => pf.file_key);
 
         setFiles(existingFiles);
-        setFileKeyList(existingKeys);
         setViewMode('edit');
     };
 
@@ -288,6 +294,14 @@ export default function AdminPostPage() {
             alert("로그인이 필요합니다.");
             return;
         }
+        if (uploading) {
+            alert("파일 업로드가 완료된 후 저장해주세요.");
+            return;
+        }
+
+        const currentKeys = files
+            .map(f => f.key)
+            .filter((k): k is string => !!k);
 
         try {
             let postData;
@@ -335,22 +349,46 @@ export default function AdminPostPage() {
 
             const targetPostId = postData[0].id;
 
-            if (fileKeyList.length) {
-                const linkPromises = fileKeyList.map(async (key) => {
-                    const { error: linkError } = await supabase
+            if (editingPostId) {
+                // 기존 첨부 키 조회 후, 사라진 키는 삭제하고 새로 추가된 키만 insert
+                const { data: existingLinks, error: fetchError } = await supabase
+                    .from("POST_FILE")
+                    .select("file_key")
+                    .eq("post_id", editingPostId);
+                if (fetchError) throw fetchError;
+
+                const existingKeys: string[] = (existingLinks ?? []).map((l: { file_key: string }) => l.file_key);
+                const removedKeys = existingKeys.filter(k => !currentKeys.includes(k));
+                const addedKeys = currentKeys.filter(k => !existingKeys.includes(k));
+
+                if (removedKeys.length) {
+                    const { error: deleteError } = await supabase
                         .from("POST_FILE")
-                        .insert([
-                            {
-                                post_id: targetPostId,
-                                file_key: key,
-                                role: "ATTACHMENT",
-                            },
-                        ]);
+                        .delete()
+                        .eq("post_id", editingPostId)
+                        .in("file_key", removedKeys);
+                    if (deleteError) throw deleteError;
+                }
 
-                    if (linkError) throw linkError;
-                });
-
-                await Promise.all(linkPromises);
+                if (addedKeys.length) {
+                    const { error: insertError } = await supabase
+                        .from("POST_FILE")
+                        .insert(addedKeys.map(key => ({
+                            post_id: targetPostId,
+                            file_key: key,
+                            role: "ATTACHMENT",
+                        })));
+                    if (insertError) throw insertError;
+                }
+            } else if (currentKeys.length) {
+                const { error: insertError } = await supabase
+                    .from("POST_FILE")
+                    .insert(currentKeys.map(key => ({
+                        post_id: targetPostId,
+                        file_key: key,
+                        role: "ATTACHMENT",
+                    })));
+                if (insertError) throw insertError;
             }
 
             alert(editingPostId ? "게시글이 수정되었습니다." : "게시글이 등록되었습니다.");
