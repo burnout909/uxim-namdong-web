@@ -11,6 +11,8 @@ import Link from "next/link";
 import { ROUTE } from "@/constants/route";
 import QuickLinkCard from "@/components/home/QuickLinkCard";
 import NoticeItem from "@/components/home/NoticeItem";
+import PhotoGallery from "@/components/home/PhotoGallery";
+import { getLatestPhotoPosts } from "@/services/postService";
 import { createClient } from "@/lib/supabase";
 import Banner from "@/components/Banner";
 import Popup from "@/components/Popup";
@@ -94,9 +96,10 @@ function formatDate(dateStr: string) {
 }
 
 export default async function Home() {
-  const [notices, jobs] = await Promise.all([
+  const [notices, jobs, photos] = await Promise.all([
     getLatestNotices(),
     getLatestJobs(),
+    getLatestPhotoPosts(8),
   ]);
 
   return (
@@ -231,6 +234,9 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {/* 포토갤러리 */}
+      <PhotoGallery items={photos} />
     </div>
   );
 }

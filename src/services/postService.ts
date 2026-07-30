@@ -17,7 +17,8 @@ export enum PostType {
 export type Post = {
     id: string;
     title: string | null;
-    contents: string | null;
+    /** 목록 조회에서는 내려오지 않는다. 상세 조회에서만 채워진다. */
+    contents?: string | null;
     created_at: string;
     updated_at: string | null;
     is_private?: boolean;
@@ -43,27 +44,32 @@ export async function getPosts(
     const supabase = await createClient();
     const offset = (page - 1) * limit;
 
-    // 전체 개수 카운트
-    const { count, error: countError } = await supabase
-        .from('POST')
-        .select('*', { count: 'exact', head: true })
-        .eq('type', type);
+    // 목록에는 본문(contents)이 필요 없다.
+    // 본문에 base64 이미지가 통째로 들어있는 글이 있어서 select에 포함하면
+    // 목록 한 페이지가 수 MB~십수 MB가 되고 그대로 게시판 진입 지연으로 이어진다.
+    // 카운트와 페이지 데이터는 서로 의존하지 않으므로 병렬로 조회한다.
+    const [
+        { count, error: countError },
+        { data, error },
+    ] = await Promise.all([
+        supabase
+            .from('POST')
+            .select('id', { count: 'exact', head: true })
+            .eq('type', type),
+        supabase
+            .from('POST')
+            .select('id, title, created_at, updated_at, is_private')
+            .eq('type', type)
+            .order('created_at', { ascending: false })
+            .range(offset, offset + limit - 1),
+    ]);
     if (countError) throw countError;
-
-    // 페이지 데이터 조회
-    const { data, error } = await supabase
-        .from('POST')
-        .select('id, title, contents, created_at, updated_at, is_private')
-        .eq('type', type)
-        .order('created_at', { ascending: false })
-        .range(offset, offset + limit - 1);
     if (error) throw error;
 
     const total = count ?? 0;
     const posts = (data ?? []).map((post) => ({
         ...post,
         title: post.is_private ? '🔒 비공개 글입니다' : post.title,
-        contents: post.is_private ? '' : post.contents,
     })) as Post[];
 
     return {
@@ -161,6 +167,33 @@ export async function verifyPostPassword(postId: string, inputPassword: string):
     } catch (err) {
         console.error("비밀번호 검증 중 오류:", err);
         return false;
+    }
+}
+
+export type PhotoGalleryItem = {
+    id: string;
+    title: string | null;
+    created_at: string;
+};
+
+/**
+ * 메인 포토갤러리용 최신 사진자료실 글 목록.
+ * 썸네일 이미지는 /api/photo-thumb/[id] 가 따로 내려주므로
+ * 여기서는 본문을 절대 조회하지 않는다.
+ */
+export async function getLatestPhotoPosts(limit = 8): Promise<PhotoGalleryItem[]> {
+    const supabase = await createClient();
+    try {
+        const { data, error } = await supabase
+            .from('POST')
+            .select('id, title, created_at')
+            .eq('type', 'PHOTO')
+            .order('created_at', { ascending: false })
+            .limit(limit);
+        if (error) return [];
+        return (data ?? []) as PhotoGalleryItem[];
+    } catch {
+        return [];
     }
 }
 
