@@ -118,6 +118,9 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* 포토갤러리 */}
+      <PhotoGallery items={photos} />
+
       {/* 공지사항 + 일자리 소식 */}
       <section className="w-full max-w-6xl mx-auto py-8 md:py-14 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 px-4">
         {/* 공지사항 */}
@@ -234,9 +237,6 @@ export default async function Home() {
           </div>
         </div>
       </section>
-
-      {/* 포토갤러리 */}
-      <PhotoGallery items={photos} />
     </div>
   );
 }
