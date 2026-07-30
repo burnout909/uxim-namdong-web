@@ -53,6 +53,25 @@ function s3KeyFromSrc(src: string): string | null {
   }
 }
 
+/** S3 원본을 presigned URL 로 받아온다 (리사이즈 전 단계) */
+async function fetchFromS3(
+  bucket: string,
+  key: string
+): Promise<{ body: Buffer; contentType: string } | null> {
+  try {
+    const url = await generateDownloadUrl(bucket, key);
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    return {
+      body: Buffer.from(await res.arrayBuffer()),
+      contentType: res.headers.get("content-type") ?? "image/png",
+    };
+  } catch (e) {
+    console.error("photo-thumb S3 fetch failed:", e);
+    return null;
+  }
+}
+
 function decodeDataUri(src: string): { body: Buffer; contentType: string } | null {
   const match = src.match(/^data:([^;,]+);base64,([\s\S]*)$/);
   if (!match) return null;
@@ -94,7 +113,12 @@ export async function GET(
       return new NextResponse(null, { status: 404 });
     }
 
-    // 1) 첨부 이미지가 있으면 S3 를 그대로 쓴다 (본문 파싱보다 언제나 빠르다)
+    const bucket = process.env.NEXT_PUBLIC_S3_BUCKET_NAME;
+
+    /** 원본 이미지 바이트를 어디서 가져오든 여기로 모은다 */
+    let source: { body: Buffer; contentType: string } | null = null;
+
+    // 1) 첨부 이미지 (role=THUMBNAIL 우선)
     const files = (post.POST_FILE ?? []) as unknown as PostFileRow[];
     const imageFiles = files
       .map((pf) => ({ role: pf.role, file: toFile(pf) }))
@@ -102,50 +126,39 @@ export async function GET(
     const picked =
       imageFiles.find((pf) => pf.role === "THUMBNAIL") ?? imageFiles[0];
 
-    if (picked?.file) {
-      const bucket = process.env.NEXT_PUBLIC_S3_BUCKET_NAME;
-      if (bucket) {
-        const url = await generateDownloadUrl(bucket, picked.file.file_key);
-        return NextResponse.redirect(url, {
+    if (picked?.file && bucket) {
+      source = await fetchFromS3(bucket, picked.file.file_key);
+    }
+
+    // 2) 본문 첫 번째 이미지
+    if (!source) {
+      const src = firstImageSrc(post.contents ?? "");
+      if (!src) return new NextResponse(null, { status: 404 });
+
+      const s3Key = s3KeyFromSrc(src);
+      if (s3Key && bucket) {
+        // 2-a) S3 로 옮겨진 본문
+        source = await fetchFromS3(bucket, s3Key);
+      } else if (/^https?:\/\//i.test(src)) {
+        // 2-b) 외부 URL 은 그대로 넘긴다
+        return NextResponse.redirect(src, {
           status: 307,
           headers: { "Cache-Control": CACHE_HEADER },
         });
+      } else {
+        // 2-c) 아직 base64 로 남아있는 본문
+        source = decodeDataUri(src);
       }
     }
 
-    // 2) 본문 이미지
-    const src = firstImageSrc(post.contents ?? "");
-    if (!src) return new NextResponse(null, { status: 404 });
-
-    if (/^https?:\/\//i.test(src)) {
-      return NextResponse.redirect(src, {
-        status: 307,
-        headers: { "Cache-Control": CACHE_HEADER },
-      });
-    }
-
-    // 2-a) 이미 S3 로 옮겨진 본문
-    const s3Key = s3KeyFromSrc(src);
-    if (s3Key) {
-      const bucket = process.env.NEXT_PUBLIC_S3_BUCKET_NAME;
-      if (!bucket) return new NextResponse(null, { status: 500 });
-      const url = await generateDownloadUrl(bucket, s3Key);
-      return NextResponse.redirect(url, {
-        status: 307,
-        headers: { "Cache-Control": CACHE_HEADER },
-      });
-    }
-
-    // 2-b) 아직 base64 로 남아있는 본문
-    const decoded = decodeDataUri(src);
-    if (!decoded) return new NextResponse(null, { status: 404 });
+    if (!source) return new NextResponse(null, { status: 404 });
 
     // 원본은 장당 1MB 안팎이라 카드 크기에 맞춰 줄여서 내보낸다.
     // 실패하면 원본 그대로 (갤러리가 아예 안 뜨는 것보단 낫다)
-    let body = decoded.body;
-    let contentType = decoded.contentType;
+    let body = source.body;
+    let contentType = source.contentType;
     try {
-      body = await sharp(decoded.body)
+      body = await sharp(source.body)
         .rotate()
         .resize({ width: THUMB_WIDTH, withoutEnlargement: true })
         .webp({ quality: 76 })
