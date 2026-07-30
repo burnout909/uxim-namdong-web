@@ -39,6 +39,20 @@ function firstImageSrc(html: string): string | null {
   return match ? match[1] : null;
 }
 
+/**
+ * base64 를 S3 로 옮긴 뒤의 본문은 <img src="/api/s3/image?key=editor/xxx.png"> 형태다.
+ * 그 경우 S3 키를 뽑아 바로 원본을 읽어온다.
+ */
+function s3KeyFromSrc(src: string): string | null {
+  if (!src.startsWith("/api/s3/image")) return null;
+  try {
+    const key = new URL(src, "http://x").searchParams.get("key");
+    return key && !key.includes("..") ? key : null;
+  } catch {
+    return null;
+  }
+}
+
 function decodeDataUri(src: string): { body: Buffer; contentType: string } | null {
   const match = src.match(/^data:([^;,]+);base64,([\s\S]*)$/);
   if (!match) return null;
@@ -99,7 +113,7 @@ export async function GET(
       }
     }
 
-    // 2) / 3) 본문에 인라인된 이미지
+    // 2) 본문 이미지
     const src = firstImageSrc(post.contents ?? "");
     if (!src) return new NextResponse(null, { status: 404 });
 
@@ -110,6 +124,19 @@ export async function GET(
       });
     }
 
+    // 2-a) 이미 S3 로 옮겨진 본문
+    const s3Key = s3KeyFromSrc(src);
+    if (s3Key) {
+      const bucket = process.env.NEXT_PUBLIC_S3_BUCKET_NAME;
+      if (!bucket) return new NextResponse(null, { status: 500 });
+      const url = await generateDownloadUrl(bucket, s3Key);
+      return NextResponse.redirect(url, {
+        status: 307,
+        headers: { "Cache-Control": CACHE_HEADER },
+      });
+    }
+
+    // 2-b) 아직 base64 로 남아있는 본문
     const decoded = decodeDataUri(src);
     if (!decoded) return new NextResponse(null, { status: 404 });
 
