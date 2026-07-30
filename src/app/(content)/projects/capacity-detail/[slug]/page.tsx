@@ -5,9 +5,20 @@ import { useParams } from 'next/navigation';
 import { createBrowserSupabaseClient } from '@/lib/supabase-browser';
 import { generateDownloadUrl } from '@/app/service/s3';
 
+/** 한글 등 비ASCII 슬러그를 안전하게 디코딩한다 */
+function decodeSlug(raw: string): string {
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return raw;
+  }
+}
+
 export default function CapacityDetailDynamic() {
   const params = useParams();
-  const slug = params.slug as string;
+  // useParams 는 URL 세그먼트를 인코딩된 그대로 돌려준다.
+  // 한글 슬러그면 %EC%B7%A8... 형태라 그대로 조회하면 매칭되지 않는다.
+  const slug = decodeSlug(params.slug as string);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
