@@ -93,6 +93,41 @@ export default function AdminBusinessPage() {
 
   const isEmployment = activeCategory === 'employment'
 
+  /**
+   * 저장 직전에 로그인 세션이 살아있는지 확인한다.
+   *
+   * BUSINESS_MENU 에는 RLS 가 걸려 있어서 세션이 만료되면 insert/update 가 조용히 막힌다.
+   * 기존 코드는 S3 업로드를 먼저 하고 DB 를 나중에 써서, 세션이 끊긴 상태에서는
+   * 이미지 파일만 S3 에 남고(고아 파일) 화면에는 "저장 중 오류"만 떴다.
+   * 그래서 업로드 전에 먼저 세션을 확인하고, 만료됐으면 갱신을 시도한다.
+   */
+  const ensureSession = async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    const expiresAt = session?.expires_at ? session.expires_at * 1000 : 0
+    // 만료 60초 전이면 미리 갱신해서 저장 도중에 끊기는 걸 막는다
+    if (session && expiresAt - Date.now() > 60_000) return session
+
+    const { data: refreshed, error } = await supabase.auth.refreshSession()
+    if (error || !refreshed.session) {
+      throw new Error(
+        '로그인 세션이 만료되었습니다. 다시 로그인한 뒤 저장해주세요.'
+      )
+    }
+    return refreshed.session
+  }
+
+  /** 저장 실패 원인을 사용자에게 그대로 보여준다 (원인 파악이 안 되던 문제) */
+  const reportError = (err: unknown, fallback: string) => {
+    console.error(err)
+    const detail =
+      err instanceof Error
+        ? err.message
+        : typeof err === 'object' && err !== null && 'message' in err
+          ? String((err as { message: unknown }).message)
+          : ''
+    alert(detail ? `${fallback}\n\n원인: ${detail}` : fallback)
+  }
+
   const fetchMenuItems = useCallback(async () => {
     if (isEmployment) { setLoading(false); return }
     setLoading(true)
@@ -196,44 +231,63 @@ export default function AdminBusinessPage() {
   }
 
   const handleSubmit = async () => {
-    if (!formName.trim() || !user) return
+    if (!formName.trim()) {
+      alert('사업명을 입력해주세요.')
+      return
+    }
+    if (!user) {
+      alert('로그인이 필요합니다. 다시 로그인한 뒤 저장해주세요.')
+      return
+    }
     setSaving(true)
     try {
-      const bucket = process.env.NEXT_PUBLIC_S3_BUCKET_NAME!
+      // DB 쓰기 권한부터 확인한다. 여기서 막히면 S3 에 고아 이미지가 남지 않는다.
+      await ensureSession()
+
+      const bucket = process.env.NEXT_PUBLIC_S3_BUCKET_NAME
+      if (!bucket) throw new Error('S3 버킷 설정(NEXT_PUBLIC_S3_BUCKET_NAME)이 비어 있습니다.')
+
       let imageKey = editingItem?.image_key || null
       let imageBucket = editingItem?.image_bucket || null
 
       if (formImageFile) {
-        const ext = formImageFile.name.split('.').pop()
-        imageKey = `business/${activeCategory}/${uuidv4()}.${ext}`
-        imageBucket = bucket
-        const uploadUrl = await generateUploadUrl(bucket, imageKey)
+        const ext = formImageFile.name.split('.').pop()?.toLowerCase() || 'png'
+        const newKey = `business/${activeCategory}/${uuidv4()}.${ext}`
+        const uploadUrl = await generateUploadUrl(bucket, newKey)
         const res = await fetch(uploadUrl, { method: 'PUT', headers: { 'Content-Type': formImageFile.type }, body: formImageFile })
-        if (!res.ok) throw new Error('이미지 업로드 실패')
+        if (!res.ok) throw new Error(`이미지 업로드 실패 (S3 ${res.status})`)
+        imageKey = newKey
+        imageBucket = bucket
       }
 
       const slug = formSlug.trim() || generateSlug(formName)
 
       if (editingItem) {
-        const { error } = await supabase.from('BUSINESS_MENU').update({
+        const { data, error } = await supabase.from('BUSINESS_MENU').update({
           name: formName.trim(), slug, image_key: imageKey, image_bucket: imageBucket, updated_at: new Date().toISOString(),
-        }).eq('id', editingItem.id)
+        }).eq('id', editingItem.id).select('id')
         if (error) throw error
+        // RLS 로 막히면 error 없이 0건이 반영된다. 성공했다고 넘어가면 안 된다.
+        if (!data || data.length === 0) {
+          throw new Error('수정 권한이 없거나 세션이 만료되어 저장되지 않았습니다. 다시 로그인해주세요.')
+        }
         alert('사업 항목이 수정되었습니다.')
       } else {
         const maxOrder = menuItems.length > 0 ? Math.max(...menuItems.map(m => m.order_index)) : 0
-        const { error } = await supabase.from('BUSINESS_MENU').insert({
+        const { data, error } = await supabase.from('BUSINESS_MENU').insert({
           category: activeCategory, name: formName.trim(), slug, image_key: imageKey,
           image_bucket: imageBucket, order_index: maxOrder + 1, is_active: true,
-        })
+        }).select('id')
         if (error) throw error
+        if (!data || data.length === 0) {
+          throw new Error('추가 권한이 없거나 세션이 만료되어 저장되지 않았습니다. 다시 로그인해주세요.')
+        }
         alert('사업 항목이 추가되었습니다.')
       }
       resetForm()
       fetchMenuItems()
     } catch (err) {
-      console.error(err)
-      alert('저장 중 오류가 발생했습니다.')
+      reportError(err, '저장 중 오류가 발생했습니다.')
     } finally { setSaving(false) }
   }
 
@@ -266,9 +320,14 @@ export default function AdminBusinessPage() {
   }
 
   const handleSaveContent = async () => {
-    if (!user) return
+    if (!user) {
+      alert('로그인이 필요합니다. 다시 로그인한 뒤 저장해주세요.')
+      return
+    }
     setContentSaving(true)
     try {
+      await ensureSession()
+
       let contentToSave: Record<string, string | null>
 
       if (isEmployment) {
@@ -277,15 +336,17 @@ export default function AdminBusinessPage() {
 
         // 새 이미지 업로드
         if (empImageFile) {
-          const bucket = process.env.NEXT_PUBLIC_S3_BUCKET_NAME!
-          const ext = empImageFile.name.split('.').pop()
-          imageKey = `business/employment/${uuidv4()}.${ext}`
-          imageBucket = bucket
-          const uploadUrl = await generateUploadUrl(bucket, imageKey)
+          const bucket = process.env.NEXT_PUBLIC_S3_BUCKET_NAME
+          if (!bucket) throw new Error('S3 버킷 설정(NEXT_PUBLIC_S3_BUCKET_NAME)이 비어 있습니다.')
+          const ext = empImageFile.name.split('.').pop()?.toLowerCase() || 'png'
+          const newKey = `business/employment/${uuidv4()}.${ext}`
+          const uploadUrl = await generateUploadUrl(bucket, newKey)
           const res = await fetch(uploadUrl, { method: 'PUT', headers: { 'Content-Type': empImageFile.type }, body: empImageFile })
-          if (!res.ok) throw new Error('이미지 업로드 실패')
-          setEmpImageKey(imageKey)
-          setEmpImageBucket(imageBucket)
+          if (!res.ok) throw new Error(`이미지 업로드 실패 (S3 ${res.status})`)
+          imageKey = newKey
+          imageBucket = bucket
+          setEmpImageKey(newKey)
+          setEmpImageBucket(bucket)
           setEmpImageFile(null)
         }
 
@@ -294,16 +355,18 @@ export default function AdminBusinessPage() {
         contentToSave = { ...commonContent }
       }
 
-      const { error } = await supabase.from('SITE_CONFIG').upsert({
+      const { data, error } = await supabase.from('SITE_CONFIG').upsert({
         config_key: `business_page_${activeCategory}`,
         config_value: JSON.stringify(contentToSave),
         updated_at: new Date().toISOString(),
-      }, { onConflict: 'config_key' })
+      }, { onConflict: 'config_key' }).select('config_key')
       if (error) throw error
+      if (!data || data.length === 0) {
+        throw new Error('저장 권한이 없거나 세션이 만료되어 저장되지 않았습니다. 다시 로그인해주세요.')
+      }
       alert('페이지 내용이 저장되었습니다.')
     } catch (err) {
-      console.error(err)
-      alert('저장 중 오류가 발생했습니다.')
+      reportError(err, '저장 중 오류가 발생했습니다.')
     } finally { setContentSaving(false) }
   }
 
