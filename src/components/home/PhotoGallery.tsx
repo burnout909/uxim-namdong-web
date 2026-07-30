@@ -55,15 +55,10 @@ export default function PhotoGallery({ items }: PhotoGalleryProps) {
       <div className="max-w-6xl mx-auto px-4">
         {/* 섹션 헤더 */}
         <div className="flex items-end justify-between gap-4 mb-5 md:mb-7 pb-3 border-b-2 border-[#6B917A]">
-          <div className="flex items-baseline gap-2 md:gap-3 min-w-0">
-            <h2 className="text-base md:text-lg font-bold text-gray-900 flex items-center gap-2 shrink-0">
-              <span className="w-1.5 h-4 md:h-5 bg-[#6B917A] rounded-sm" />
-              포토갤러리
-            </h2>
-            <p className="hidden sm:block text-xs md:text-sm text-gray-400 truncate">
-              남동시니어클럽의 다양한 활동들을 확인해 보세요.
-            </p>
-          </div>
+          <h2 className="text-base md:text-lg font-bold text-gray-900 flex items-center gap-2 shrink-0">
+            <span className="w-1.5 h-4 md:h-5 bg-[#6B917A] rounded-sm" />
+            포토갤러리
+          </h2>
 
           <div className="flex items-center gap-2 shrink-0">
             {/* 한 화면에 다 들어오면 화살표는 숨긴다 (계속 비활성으로 떠 있으면 고장난 것처럼 보임) */}
