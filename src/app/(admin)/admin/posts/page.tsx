@@ -1,10 +1,9 @@
 'use client'
 import { useMemo, useState, useEffect, useCallback, type ChangeEvent } from "react";
-import 'react-quill-new/dist/quill.snow.css';
-import dynamic from "next/dynamic";
+import Editor from "@/components/posting/Editor";
 import { createBrowserSupabaseClient } from '@/lib/supabase-browser';
 import { v4 as uuidv4 } from "uuid";
-import { formatMetaDate } from "@/utils/post";
+import { formatMetaDate, isEditorContentEmpty } from "@/utils/post";
 import { useAuth } from "@/hooks/useAuth";
 
 // 브라우저용 Supabase 클라이언트
@@ -28,12 +27,6 @@ type PostSummary = {
     created_at: string;
     type: keyof typeof CategoryTypeEnumMap;
 };
-
-// SSR 비활성화해서 클라이언트에서만 로드
-const ReactQuill = dynamic(() => import('react-quill-new'), {
-    ssr: false,
-    loading: () => <div className="text-sm text-gray-500">에디터 로딩 중…</div>,
-});
 
 type LocalFile = {
     file: File;
@@ -60,6 +53,7 @@ export default function AdminPostPage() {
     // 업로드 상태
     const [files, setFiles] = useState<LocalFile[]>([]);
     const [uploading, setUploading] = useState(false);
+    const [imageUploading, setImageUploading] = useState(false);
 
     // 카테고리별 관리자 게시글 목록 로드
     const fetchPostList = useCallback(async (targetPage: number) => {
@@ -104,40 +98,9 @@ export default function AdminPostPage() {
     }, [fetchPostList, page]);
 
     // 빈 에디터 판정(태그/엔티티 제거)
-    const isEmpty = useMemo(() => {
-        const plain = contents
-            .replace(/<[^>]+>/g, "")      // 태그 제거
-            .replace(/&nbsp;/g, " ")      // nbsp 제거
-            .replace(/\s+/g, " ")         // 공백 정리
-            .trim();
-        return !title.trim() || plain.length === 0;
-    }, [title, contents]);
-
-    /**toolbar 구성 */
-    const modules = useMemo(
-        () => ({
-            toolbar: [
-                [{ header: [1, 2, false] }],
-                ['bold', 'italic', 'underline'],
-                [{ list: 'ordered' }, { list: 'bullet' }],
-            ],
-        }),
-        []
-    );
-
-    /**실제 quil format */
-    const formats = useMemo(
-        () => [
-            'header',
-            'bold',
-            'italic',
-            'underline',
-            'list',
-            'link',
-            'image',
-            'video'
-        ],
-        []
+    const isEmpty = useMemo(
+        () => !title.trim() || isEditorContentEmpty(contents),
+        [title, contents]
     );
 
     // 파일 업로드 핸들러 (영상 제외)
@@ -294,7 +257,7 @@ export default function AdminPostPage() {
             alert("로그인이 필요합니다.");
             return;
         }
-        if (uploading) {
+        if (uploading || imageUploading) {
             alert("파일 업로드가 완료된 후 저장해주세요.");
             return;
         }
@@ -672,21 +635,16 @@ export default function AdminPostPage() {
                         className="w-full border border-gray-300 p-3 mb-4 rounded text-gray-900 placeholder:text-gray-400"
                     />
 
-                    <div className="bg-white rounded border border-gray-200">
-                        <ReactQuill
-                            theme="snow"
-                            value={contents}
-                            onChange={setContents}
-                            modules={modules}
-                            formats={formats}
-                            className="quill-wrapper"
-                        />
-                    </div>
+                    <Editor
+                        contents={contents}
+                        setContents={setContents}
+                        onUploadingChange={setImageUploading}
+                    />
 
                     <div className="relative z-10 mt-4 flex gap-2">
                         <button
                             onClick={handleSubmit}
-                            disabled={isEmpty || uploading}
+                            disabled={isEmpty || uploading || imageUploading}
                             className="cursor-pointer px-6 py-2 text-white bg-blue-500 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded font-semibold shadow"
                         >
                             {editingPostId ? "수정하기" : "게시하기"}

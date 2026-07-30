@@ -1,9 +1,9 @@
 'use client'
 import { useCallback, useEffect, useMemo, useState } from "react";
-import dynamic from "next/dynamic";
+import Editor from "@/components/posting/Editor";
+import { isEditorContentEmpty } from "@/utils/post";
 import { useParams, useRouter } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
-import "react-quill-new/dist/quill.snow.css";
 
 const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -19,11 +19,6 @@ const CategoryTypeEnumMap = {
   VIDEO: "동영상자료실",
 };
 
-const ReactQuill = dynamic(() => import("react-quill-new"), {
-  ssr: false,
-  loading: () => <div className="text-sm text-gray-500">에디터 로딩 중…</div>,
-});
-
 export default function AdminPostEditPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
@@ -33,6 +28,7 @@ export default function AdminPostEditPage() {
   const [type, setType] = useState<keyof typeof CategoryTypeEnumMap>("NOTICE");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
 
   const fetchPost = useCallback(async () => {
     if (!id) return;
@@ -65,29 +61,9 @@ export default function AdminPostEditPage() {
     fetchPost();
   }, [fetchPost]);
 
-  const isEmpty = useMemo(() => {
-    const plain = contents
-      .replace(/<[^>]+>/g, "")
-      .replace(/&nbsp;/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-    return !title.trim() || plain.length === 0;
-  }, [title, contents]);
-
-  const modules = useMemo(
-    () => ({
-      toolbar: [
-        [{ header: [1, 2, false] }],
-        ["bold", "italic", "underline"],
-        [{ list: "ordered" }, { list: "bullet" }],
-      ],
-    }),
-    []
-  );
-
-  const formats = useMemo(
-    () => ["header", "bold", "italic", "underline", "list", "link", "image", "video"],
-    []
+  const isEmpty = useMemo(
+    () => !title.trim() || isEditorContentEmpty(contents),
+    [title, contents]
   );
 
   const handleUpdate = async () => {
@@ -195,21 +171,16 @@ export default function AdminPostEditPage() {
           className="w-full border border-gray-300 p-3 mb-4 rounded text-gray-900 placeholder:text-gray-400"
         />
 
-        <div className="bg-white rounded border border-gray-200">
-          <ReactQuill
-            theme="snow"
-            value={contents}
-            onChange={setContents}
-            modules={modules}
-            formats={formats}
-            className="quill-wrapper"
-          />
-        </div>
+        <Editor
+          contents={contents}
+          setContents={setContents}
+          onUploadingChange={setImageUploading}
+        />
 
         <div className="mt-4 flex gap-2">
           <button
             onClick={handleUpdate}
-            disabled={isEmpty || saving}
+            disabled={isEmpty || saving || imageUploading}
             className="cursor-pointer px-6 py-2 text-white bg-blue-500 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded font-semibold shadow"
           >
             저장

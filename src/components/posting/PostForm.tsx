@@ -7,6 +7,7 @@ import Editor from "./Editor";
 import PrivateOption from "./PrivateOption";
 import SubmitButton from "./SubmitButton";
 import bcrypt from "bcryptjs";
+import { isEditorContentEmpty } from "@/utils/post";
 
 const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -31,13 +32,14 @@ export default function PostForm() {
         getUserInfo();
     }, []);
 
-    const isEmpty = useMemo(() => {
-        const plain = contents.replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").trim();
-        return !title.trim() || plain.length === 0;
-    }, [title, contents]);
+    const isEmpty = useMemo(
+        () => !title.trim() || isEditorContentEmpty(contents),
+        [title, contents]
+    );
 
     const handleSubmit = async () => {
         if (isEmpty) return alert("제목과 내용을 모두 입력해주세요.");
+        if (uploading) return alert("이미지 업로드가 끝난 뒤 등록해주세요.");
         if (isPrivate && password.trim().length < 4) return alert("비밀번호는 4자리 이상이어야 합니다.");
 
         const hashedPassword = isPrivate ? await bcrypt.hash(password, 10) : null;
@@ -73,7 +75,11 @@ export default function PostForm() {
         <div className="flex-col w-full flex space-y-4 justify-between my-6">
             <PrivateOption isPrivate={isPrivate} setIsPrivate={setIsPrivate} password={password} setPassword={setPassword} />
             <TitleInput title={title} setTitle={setTitle} />
-            <Editor contents={contents} setContents={setContents} />
+            <Editor
+                contents={contents}
+                setContents={setContents}
+                onUploadingChange={setUploading}
+            />
             <SubmitButton onClick={handleSubmit} disabled={isEmpty || uploading} />
         </div>
     );
