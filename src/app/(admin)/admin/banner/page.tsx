@@ -263,12 +263,12 @@ export default function BannerPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">배너 관리</h1>
           <p className="text-gray-600">메인 페이지에 표시될 배너를 등록하고 관리하세요</p>
-          <p className="text-sm text-blue-600 mt-1">📐 최종 크기: 1200 x 400px (3:1 비율)</p>
+          <p className="text-sm text-blue-600 mt-1">최종 크기: 1200 x 400px (3:1 비율)</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 mb-8">
@@ -309,7 +309,7 @@ export default function BannerPage() {
               <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
                 <div className="mb-3 flex items-center justify-between">
                   <p className="text-sm font-medium text-gray-700">
-                    🎯 배너 영역을 조정하세요 (3:1 비율)
+                    배너 영역을 조정하세요 (3:1 비율)
                   </p>
                   <button
                     onClick={handleCancelSelect}

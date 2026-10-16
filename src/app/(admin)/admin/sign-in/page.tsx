@@ -42,7 +42,7 @@ export default function AdminSignInPage() {
     }
 
     return (
-        <div className="min-h-[100vh] flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-4">
+        <div className="min-h-[100vh] flex items-center justify-center bg-gray-50 px-4">
             <div className="w-full max-w-md">
                 <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
                     <div className="text-center mb-8">

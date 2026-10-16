@@ -293,12 +293,12 @@ export default function PopupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">팝업 관리</h1>
           <p className="text-gray-600">메인 페이지에 표시될 팝업을 등록하고 관리하세요</p>
-          <p className="text-sm text-purple-600 mt-1">📐 크기 자유 (최대: 800 x 1000px)</p>
+          <p className="text-sm text-purple-600 mt-1">크기 자유 (최대: 800 x 1000px)</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 mb-8">
@@ -368,7 +368,7 @@ export default function PopupPage() {
               {/* 링크 URL 입력 */}
               <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
                 <label className="block text-sm font-semibold text-gray-900 mb-2">
-                  🔗 링크 URL (선택사항)
+                  링크 URL (선택사항)
                 </label>
                 <input
                   type="url"
@@ -378,7 +378,7 @@ export default function PopupPage() {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-gray-900"
                 />
                 <p className="text-xs text-gray-600 mt-2">
-                  💡 팝업 클릭 시 이동할 URL을 입력하세요 (입력하지 않으면 클릭 불가)
+                  팝업 클릭 시 이동할 URL을 입력하세요 (입력하지 않으면 클릭 불가)
                 </p>
               </div>
 
@@ -452,7 +452,7 @@ export default function PopupPage() {
 
                   {popup.link_url && (
                     <div className="absolute top-12 right-3 z-10 px-3 py-1 bg-blue-500 text-white text-xs font-bold rounded-full shadow-md">
-                      🔗 링크
+                      링크
                     </div>
                   )}
 

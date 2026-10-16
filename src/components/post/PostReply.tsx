@@ -76,7 +76,7 @@ export default function PostReply({ postId, isAdmin = false }: PostReplyProps) {
           >
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">
-                {"남동시니어클럽"} ·{" "}
+                {"남동시니어클럽"}{" "}
                 {new Date(reply.created_at).toLocaleString("ko-KR")}
               </span>
 

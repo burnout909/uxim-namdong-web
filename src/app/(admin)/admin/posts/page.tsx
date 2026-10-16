@@ -172,7 +172,7 @@ export default function AdminPostPage() {
                 if (error) throw error;
             }));
 
-            // 업로드 완료 — pending 해제
+            // 업로드 완료: pending 해제
             const uploadedKeys = new Set(items.map(i => i.key));
             setFiles(prev => prev.map(f => (f.key && uploadedKeys.has(f.key) ? { ...f, pending: false } : f)));
         } catch (err) {

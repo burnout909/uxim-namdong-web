@@ -10,61 +10,61 @@ export default function AdminHomePage() {
       href: '/admin/posts',
       icon: <FaNewspaper className="w-12 h-12" />,
       description: '공지사항, 일자리 소식 등 게시글을 관리합니다',
-      color: 'from-blue-500 to-blue-600',
-      hoverColor: 'hover:from-blue-600 hover:to-blue-700'
+      color: 'bg-blue-600',
+      hoverColor: 'hover:bg-blue-700'
     },
     { 
       name: '배너 관리', 
       href: '/admin/banner',
       icon: <FaImage className="w-12 h-12" />,
       description: '메인 페이지 배너 이미지를 관리합니다',
-      color: 'from-purple-500 to-purple-600',
-      hoverColor: 'hover:from-purple-600 hover:to-purple-700'
+      color: 'bg-purple-600',
+      hoverColor: 'hover:bg-purple-700'
     },
     { 
       name: '팝업 관리', 
       href: '/admin/popup',
       icon: <FaWindowMaximize className="w-12 h-12" />,
       description: '메인 페이지 팝업을 관리합니다',
-      color: 'from-green-500 to-green-600',
-      hoverColor: 'hover:from-green-600 hover:to-green-700'
+      color: 'bg-green-600',
+      hoverColor: 'hover:bg-green-700'
     },
     {
       name: '자유게시판 관리',
       href: '/admin/freeboard',
       icon: <FaComments className="w-12 h-12" />,
       description: '회원들이 작성한 자유게시판 글을 관리합니다',
-      color: 'from-orange-500 to-orange-600',
-      hoverColor: 'hover:from-orange-600 hover:to-orange-700'
+      color: 'bg-orange-600',
+      hoverColor: 'hover:bg-orange-700'
     },
     {
       name: '조직도 관리',
       href: '/admin/organization',
       icon: <FaSitemap className="w-12 h-12" />,
       description: '조직도 이미지와 인원 구성표를 관리합니다',
-      color: 'from-teal-500 to-teal-600',
-      hoverColor: 'hover:from-teal-600 hover:to-teal-700'
+      color: 'bg-teal-600',
+      hoverColor: 'hover:bg-teal-700'
     },
     {
       name: '사업 관리',
       href: '/admin/business',
       icon: <FaBriefcase className="w-12 h-12" />,
       description: '사업 메뉴 항목을 추가/수정/삭제합니다',
-      color: 'from-indigo-500 to-indigo-600',
-      hoverColor: 'hover:from-indigo-600 hover:to-indigo-700'
+      color: 'bg-indigo-600',
+      hoverColor: 'hover:bg-indigo-700'
     },
     {
       name: '안전보건경영방침',
       href: '/admin/safety',
       icon: <FaShieldAlt className="w-12 h-12" />,
       description: '안전보건경영방침 이미지를 관리합니다',
-      color: 'from-emerald-500 to-emerald-600',
-      hoverColor: 'hover:from-emerald-600 hover:to-emerald-700'
+      color: 'bg-emerald-600',
+      hoverColor: 'hover:bg-emerald-700'
     },
   ];
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-8">
+    <main className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-7xl mx-auto">
         {/* 헤더 */}
         <div className="mb-12">
@@ -86,11 +86,10 @@ export default function AdminHomePage() {
             >
               <div className={`
                 relative overflow-hidden
-                bg-gradient-to-br ${menu.color}
+                ${menu.color}
                 ${menu.hoverColor}
-                rounded-2xl shadow-lg hover:shadow-2xl
+                rounded-lg shadow-sm hover:shadow-md
                 transition-all duration-300
-                transform hover:-translate-y-2
                 p-8
               `}>
                 {/* 배경 패턴 */}

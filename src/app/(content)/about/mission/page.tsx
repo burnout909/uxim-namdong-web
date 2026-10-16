@@ -33,7 +33,7 @@ export default function Mission() {
             {/* 핵심가치 Section */}
             <div className="mt-10 md:mt-16">
                 <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-6 md:mb-8">
-                    🌟 핵심가치 (Core Values)
+                    핵심가치 (Core Values)
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 justify-items-center max-w-[320px] md:max-w-none mx-auto">
                     <div className="flex flex-col items-center text-center">

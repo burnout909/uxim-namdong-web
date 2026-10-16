@@ -38,12 +38,12 @@ export default function Introduction() {
           <div className="text-gray-800 leading-relaxed text-[16px] space-y-6">
             <p>
               <strong className="font-semibold text-gray-900">시니어클럽</strong>은
-              「노인복지법」 제23조의2에 따라 설치·운영되는
+              「노인복지법」 제23조의2에 따라 설치 및 운영되는
               <span className="text-blue-600 font-medium">
                 {" "}
                 노인일자리 전담기관
               </span>
-              으로서, 만 60세 이상 노인에게 적합한 일자리를 발굴·제공하여
+              으로서, 만 60세 이상 노인에게 적합한 일자리를 발굴 및 제공하여
               <strong className="font-semibold text-gray-900"> 소득창출과 사회참여</strong>를
               지원하고, 노인의 삶의 질 향상과 지역사회 공익증진을 목표로 하고
               있습니다.

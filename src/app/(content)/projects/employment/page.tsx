@@ -61,8 +61,8 @@ export default async function Employment() {
         <div className="space-y-3 md:space-y-4">
           <InfoField label="사업의 정의">{c.definition}</InfoField>
           <InfoField label="사업대상">
-            <p>· <strong>구인처</strong>: {c.targetEmployer}</p>
-            <p>· <strong>구직자</strong>: {c.targetJobseeker}</p>
+            <p><strong>구인처</strong>: {c.targetEmployer}</p>
+            <p><strong>구직자</strong>: {c.targetJobseeker}</p>
           </InfoField>
           <InfoField label="활동시간 / 활동일">{c.activityTime}</InfoField>
           <InfoField label="활동지역">{c.activityArea}</InfoField>
