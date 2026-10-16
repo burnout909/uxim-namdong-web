@@ -21,7 +21,7 @@ export default function Location() {
                 <div className="text-gray-700 leading-relaxed text-sm md:text-[15px]">
                     <h3 className="text-lg md:text-xl text-blue-500 font-semibold mb-2">주소</h3>
                     <p className="mb-4">
-                        인천광역시 남동구 남동서로62번길 13 (구월동, 남동구노인복지관)
+                        인천광역시 남동구 남동서로62번길 13 (구월동, 남동시니어클럽)
                     </p>
 
                     <div className="grid grid-cols-2 gap-4 md:gap-6">
